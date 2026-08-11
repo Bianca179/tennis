@@ -1,0 +1,10 @@
+{
+  "name": "Matchplan — Your Coaches",
+  "short_name": "Matchplan",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0e1726",
+  "theme_color": "#0e1726",
+  "description": "Your coaches in one place — performance, nutrition and the mental game.",
+  "icons": []
+}

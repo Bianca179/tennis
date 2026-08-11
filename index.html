@@ -1,0 +1,424 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matchplan — Your Coaches</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{
+    --bg:#0e1726; --surface:#16223a; --surface-2:#1d2c49; --ink:#f4f7fb;
+    --ink-2:#a9b6cc; --line:rgba(255,255,255,.10); --accent:#3d7dff; --accent-2:#2a78d6;
+    --good:#22b573;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  #app{max-width:520px;margin:0 auto;min-height:100vh;
+    padding:calc(env(safe-area-inset-top,0) + 22px) 18px calc(env(safe-area-inset-bottom,0) + 28px)}
+  h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.02em}
+  h2{font-size:1.2rem;margin:0 0 14px}
+  p.sub{color:var(--ink-2);margin:0 0 20px;line-height:1.5}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:14px 22px;border:none;border-radius:999px;font-size:1rem;font-weight:600;
+    cursor:pointer;font-family:inherit;background:var(--accent);color:#fff;width:100%}
+  .btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:disabled{opacity:.5}
+  input,textarea{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);font-size:1rem;font-family:inherit}
+  input:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+  label{display:block;font-size:.85rem;color:var(--ink-2);margin:14px 0 6px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+  /* Hub tiles */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:16px;cursor:pointer;text-align:left;color:var(--ink);display:flex;flex-direction:column;
+    gap:8px;min-height:120px;transition:transform .08s,border-color .12s}
+  .tile:active{transform:scale(.98)}
+  .tile:hover{border-color:var(--accent)}
+  .tile .ic{font-size:1.9rem}
+  .tile .nm{font-weight:700}
+  .tile .tg{font-size:.82rem;color:var(--ink-2);line-height:1.35}
+  .tile.wide{grid-column:1 / -1;flex-direction:row;align-items:center;min-height:0}
+  .tile.wide .ic{font-size:1.6rem}
+  .tile.soon{opacity:.6}
+  .badge{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:2px 8px;align-self:flex-start}
+  .badge.soon{color:var(--ink-2);border-color:var(--line)}
+  .badge.on{color:var(--good);border-color:var(--good)}
+  .trialbar{font-size:.8rem;color:var(--ink-2);margin-top:18px;text-align:center}
+  /* Chat */
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .topbar button{background:none;border:none;color:var(--ink-2);font-size:1.4rem;cursor:pointer;padding:4px}
+  .log{display:flex;flex-direction:column;gap:8px;padding:4px 0 96px}
+  .msg{max-width:86%;padding:11px 14px;border-radius:16px;line-height:1.5;font-size:.95rem;overflow-wrap:break-word}
+  .msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+  .msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msg.typing{color:var(--ink-2)}
+  .inrow{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;
+    display:flex;gap:8px;padding:10px 18px calc(env(safe-area-inset-bottom,0) + 12px);
+    background:linear-gradient(transparent,var(--bg) 22%)}
+  .inrow textarea{flex:1;resize:none}
+  .inrow .btn{width:auto;padding:14px 18px}
+  .steps{color:var(--ink-2);font-size:.8rem;margin-bottom:10px}
+  .center{min-height:80vh;display:flex;flex-direction:column;justify-content:center}
+  .price{display:flex;gap:10px;margin-top:14px}
+  .price .card{flex:1;text-align:center}
+  .price .amt{font-size:1.4rem;font-weight:800;margin:4px 0}
+  a.plain{color:var(--accent);text-decoration:none}
+  .picks{display:flex;flex-direction:column;gap:10px;margin:16px 0 18px;text-align:left}
+  .pick{display:flex;align-items:center;gap:12px;background:var(--surface);
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer}
+  .pick:hover{border-color:var(--accent)}
+  .pick input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent)}
+  .pick.bundle{border-color:rgba(61,125,255,.45);background:rgba(61,125,255,.07)}
+  .pk-main{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+  .pk-name{font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pk-tag{font-size:.8rem;color:var(--ink-2)}
+  .pk-price{font-weight:700;white-space:nowrap}
+  .hidden{display:none}
+</style>
+
+<div id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+  var DISCLAIMER = "These coaches give performance, nutrition and mindset support. "+
+    "They are NOT medical, psychological or therapeutic advice, and NOT a substitute for a "+
+    "doctor, dietitian or therapist. Don't use them for diagnosis or treatment. "+
+    "If you're in crisis or need medical help, contact a qualified professional or emergency services.";
+
+  var CFG = {
+    chatUrl: "/api/chat",
+    subscribeUrl: "/api/subscribe",
+    checkoutUrl: "/api/checkout",
+    trialDays: 7,
+    // Voca-style: the buyer picks coaches (or the bundle); the app asks the server to
+    // build a Stripe Checkout for exactly that selection. Prices/amounts live in Stripe;
+    // the labels below are display-only. `key` maps to a Stripe Price via env in checkout.js.
+    plans: [
+      { key:"markus",  name:"Markus",        tag:"Performance & nutrition", price:"€9 / mo" },
+      { key:"sam",     name:"Sam Menton",    tag:"Mental game",             price:"€9 / mo" },
+      { key:"fitness", name:"Fitness Coach", tag:"Stretching & mobility",   price:"€9 / mo" }
+    ],
+    bundle: { key:"bundle", name:"All three (bundle)", tag:"Markus + Sam + Fitness", price:"€19 / mo" },
+    samAppUrl: "https://sammenton.netlify.app/"  // v1: Sam runs as its own app; hub launches it
+  };
+
+  var COACHES = {
+    sam:     { name:"Sam Menton", icon:"🧠", tag:"Mental game — matches, pressure, focus.", mode:"external", url:CFG.samAppUrl },
+    markus:  { name:"Markus",     icon:"🎾", tag:"Performance & nutrition — fuel, load, recovery.", mode:"chat", intake:true,
+               greeting:"Hey — I've got your profile. What's on for today: a training day, a match, or figuring out what to eat?" },
+    fitness: { name:"Fitness Coach", icon:"🤸", tag:"Stretching & mobility routines.", mode:"soon" }
+  };
+
+  var app = document.getElementById("app");
+  var S = {
+    get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+    set:function(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  };
+
+  // token from ?key=... unlocks paid access
+  (function(){
+    var m = location.search.match(/[?&]key=([^&]+)/);
+    if(m){ S.set("cf_token", decodeURIComponent(m[1])); }
+    // Returning from Stripe Checkout: ?paid=1 grants access on this device (MVP).
+    // Production: a Stripe webhook (checkout.session.completed) issues a real per-buyer
+    // token and emails a ?key=TOKEN link — see checkout.js.
+    var p = location.search.match(/[?&]paid=([01])/);
+    if(p){
+      if(p[1]==="1") S.set("cf_paid", true);
+      // clean the query so a refresh doesn't re-trigger
+      try{ history.replaceState(null,"",location.pathname); }catch(e){}
+    }
+  })();
+
+  function el(html){var t=document.createElement("template");t.innerHTML=html.trim();return t.content.firstElementChild;}
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]);});}
+
+  function hasToken(){ return !!S.get("cf_token",""); }
+  function trialInfo(){
+    var start = S.get("cf_trialStart", null);
+    if(!start) return { active:false, daysLeft:0, started:false };
+    var days = (Date.now() - start) / 86400000;
+    var left = Math.ceil(CFG.trialDays - days);
+    return { active: left > 0, daysLeft: Math.max(0,left), started:true };
+  }
+  function isPaid(){ return !!S.get("cf_paid", false); }
+  function accessOk(){ return hasToken() || isPaid() || trialInfo().active; }
+
+  // ---------- Router ----------
+  function route(){
+    if(!S.get("cf_email", null)) return viewOnboard();
+    if(!accessOk()) return viewPaywall();
+    return viewHome();
+  }
+
+  // ---------- Onboarding + email capture → trial ----------
+  function viewOnboard(){
+    var wrap = el(
+      '<div class="center">'+
+        '<h1>Your coaches, in one place 🎾</h1>'+
+        '<p class="sub">Markus for performance & nutrition, Sam for the mental game, a fitness coach for mobility — grounded in your body data. Start your free '+CFG.trialDays+'-day trial.</p>'+
+        '<div class="card">'+
+          '<label for="em">Your email</label>'+
+          '<input id="em" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">'+
+          '<div style="height:14px"></div>'+
+          '<button class="btn" id="go">Start free trial</button>'+
+          '<p class="sub" style="margin:12px 0 0;font-size:.78rem">No card required. We\'ll only email you about your coaching.</p>'+
+        '</div>'+
+        '<div class="card" style="margin-top:14px;border-color:rgba(250,178,25,.35)">'+
+          '<p class="sub" style="margin:0;font-size:.8rem"><strong>Important.</strong> '+esc(DISCLAIMER)+'</p>'+
+        '</div>'+
+        '<p class="sub" style="margin-top:14px;font-size:.72rem">By starting, you agree this is not medical or therapeutic advice.</p>'+
+      '</div>');
+    app.replaceChildren(wrap);
+    var input = wrap.querySelector("#em"), btn = wrap.querySelector("#go");
+    function submit(){
+      var email = (input.value||"").trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ input.focus(); input.style.borderColor="var(--accent)"; return; }
+      btn.disabled = true; btn.textContent = "Starting…";
+      S.set("cf_email", email);
+      S.set("cf_trialStart", Date.now());
+      // fire-and-forget email capture
+      try{ fetch(CFG.subscribeUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email:email, ts:new Date().toISOString()})}); }catch(e){}
+      viewHome();
+    }
+    btn.addEventListener("click", submit);
+    input.addEventListener("keydown", function(e){ if(e.key==="Enter") submit(); });
+  }
+
+  // ---------- Paywall (Voca-style dynamic checkout) ----------
+  // The buyer ticks the coaches they want (or the bundle); we ask the server to build a
+  // Stripe Checkout for exactly that selection and redirect there.
+  function viewPaywall(){
+    var opts = "";
+    CFG.plans.forEach(function(p){
+      opts += '<label class="pick" data-key="'+p.key+'">'+
+        '<input type="checkbox" data-key="'+p.key+'">'+
+        '<span class="pk-main"><span class="pk-name">'+esc(p.name)+'</span>'+
+        '<span class="pk-tag">'+esc(p.tag)+'</span></span>'+
+        '<span class="pk-price">'+esc(p.price)+'</span></label>';
+    });
+    var b = CFG.bundle;
+    var bundleOpt = '<label class="pick bundle" data-key="'+b.key+'">'+
+      '<input type="checkbox" data-key="'+b.key+'">'+
+      '<span class="pk-main"><span class="pk-name">'+esc(b.name)+' <span class="badge on">Best value</span></span>'+
+      '<span class="pk-tag">'+esc(b.tag)+'</span></span>'+
+      '<span class="pk-price">'+esc(b.price)+'</span></label>';
+
+    var wrap = el(
+      '<div class="center">'+
+        '<h1>Choose your coaching</h1>'+
+        '<p class="sub">Pick a single coach, mix a few, or take all three as a bundle. You can change later.</p>'+
+        '<div class="picks">'+ bundleOpt + opts +'</div>'+
+        '<button class="btn" id="buy" disabled>Continue to checkout</button>'+
+        '<p class="sub" id="buyerr" style="margin-top:10px;font-size:.8rem;color:var(--accent);display:none"></p>'+
+        '<p class="sub" style="margin-top:16px;font-size:.8rem">Already bought? Open the link from your purchase email — it unlocks this app.</p>'+
+        '<p class="sub" style="margin-top:10px;font-size:.72rem">'+esc(DISCLAIMER)+'</p>'+
+      '</div>');
+    app.replaceChildren(wrap);
+
+    var buy = wrap.querySelector("#buy");
+    var errBox = wrap.querySelector("#buyerr");
+    var boxes = Array.prototype.slice.call(wrap.querySelectorAll('input[type=checkbox]'));
+    var bundleBox = wrap.querySelector('.pick.bundle input');
+
+    function selectedKeys(){
+      return boxes.filter(function(x){return x.checked;}).map(function(x){return x.getAttribute("data-key");});
+    }
+    function sync(){
+      // Bundle is exclusive with the individual coaches.
+      if(bundleBox.checked){
+        boxes.forEach(function(x){ if(x!==bundleBox){ x.checked=false; x.disabled=true; } });
+      } else {
+        boxes.forEach(function(x){ x.disabled=false; });
+      }
+      buy.disabled = selectedKeys().length===0;
+    }
+    boxes.forEach(function(x){ x.addEventListener("change", sync); });
+
+    buy.addEventListener("click", function(){
+      var items = selectedKeys();
+      if(!items.length) return;
+      buy.disabled = true; buy.textContent = "Opening checkout…"; errBox.style.display="none";
+      fetch(CFG.checkoutUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ items:items, period:"monthly", email:S.get("cf_email","") })})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if(d && d.url){ location.href = d.url; return; }
+          throw new Error(d && d.error || "checkout_failed");
+        })
+        .catch(function(){
+          buy.disabled=false; buy.textContent="Continue to checkout";
+          errBox.textContent="Sorry — couldn't start checkout. Please try again."; errBox.style.display="block";
+        });
+    });
+  }
+
+  // ---------- Home / hub ----------
+  function viewHome(){
+    var t = trialInfo();
+    var trialLine = hasToken() ? '<span class="badge on">Full access</span>'
+      : (t.active ? ("Free trial · "+t.daysLeft+" day"+(t.daysLeft===1?"":"s")+" left") : "");
+    var tiles = "";
+    ["markus","sam","fitness"].forEach(function(k){
+      var c = COACHES[k];
+      var badge = c.mode==="soon" ? '<span class="badge soon">Soon</span>' : '';
+      tiles += '<button class="tile'+(c.mode==="soon"?" soon":"")+'" data-coach="'+k+'">'+
+        '<span class="ic">'+c.icon+'</span>'+
+        '<span class="nm">'+esc(c.name)+'</span>'+
+        '<span class="tg">'+esc(c.tag)+'</span>'+ badge +'</button>';
+    });
+    var wrap = el(
+      '<div>'+
+        '<h1>Your coaches</h1>'+
+        '<p class="sub">Pick who you want to talk to.</p>'+
+        '<div class="tiles">'+ tiles +
+          '<button class="tile wide" data-coach="whoop">'+
+            '<span class="ic">⌚</span>'+
+            '<span style="display:flex;flex-direction:column;gap:2px">'+
+              '<span class="nm">Connect your Whoop</span>'+
+              '<span class="tg">Ground your briefing in real recovery, sleep & strain.</span>'+
+            '</span></button>'+
+        '</div>'+
+        '<div class="trialbar">'+ trialLine +'</div>'+
+        '<p class="sub" style="margin-top:16px;font-size:.72rem;text-align:center">'+esc(DISCLAIMER)+'</p>'+
+      '</div>');
+    app.replaceChildren(wrap);
+    wrap.querySelectorAll("[data-coach]").forEach(function(b){
+      b.addEventListener("click", function(){ openCoach(b.getAttribute("data-coach")); });
+    });
+  }
+
+  function openCoach(k){
+    if(k==="whoop") return viewWhoop();
+    var c = COACHES[k];
+    if(!c) return;
+    if(c.mode==="soon"){ return viewSoon(c); }
+    if(c.mode==="external"){ location.href = c.url; return; }
+    if(c.intake && !S.get("cf_profile", null)) return viewIntake(k);
+    viewChat(k);
+  }
+
+  function viewSoon(c){
+    var wrap = el(
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+c.icon+' '+esc(c.name)+'</h2></div>'+
+      '<div class="card"><p class="sub" style="margin:0">'+esc(c.name)+' is coming soon. It will bring a full library of stretching and mobility routines.</p></div></div>');
+    app.replaceChildren(wrap);
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+  }
+
+  function viewWhoop(){
+    var wrap = el(
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">⌚ Connect Whoop</h2></div>'+
+      '<div class="card">'+
+        '<p class="sub">Connecting your Whoop lets your morning briefing use your real recovery, sleep and strain — the difference between generic advice and advice for <em>your</em> body today.</p>'+
+        '<p class="sub" style="margin-bottom:0">Setup is done together so it\'s connected correctly to your account. Request access and we\'ll get you set up.</p>'+
+        '<div style="height:14px"></div>'+
+        '<button class="btn" id="req">Request Whoop setup</button>'+
+      '</div></div>');
+    app.replaceChildren(wrap);
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+    wrap.querySelector("#req").addEventListener("click", function(){
+      try{ fetch(CFG.subscribeUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email:S.get("cf_email",""), request:"whoop", ts:new Date().toISOString()})}); }catch(e){}
+      wrap.querySelector("#req").textContent = "Request sent ✓";
+      wrap.querySelector("#req").disabled = true;
+    });
+  }
+
+  // ---------- Markus intake ----------
+  function viewIntake(k){
+    var wrap = el(
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">A few things about you</h2></div>'+
+      '<p class="steps">Markus uses this to tailor fuel and training to you. Stays private.</p>'+
+      '<div class="card">'+
+        '<label>Age</label><input id="age" type="number" inputmode="numeric" placeholder="e.g. 21">'+
+        '<label>Height (cm)</label><input id="height" type="number" inputmode="numeric" placeholder="e.g. 183">'+
+        '<label>Weight (kg)</label><input id="weight" type="number" inputmode="numeric" placeholder="e.g. 76">'+
+        '<label>Where do you live?</label><input id="location" type="text" placeholder="e.g. Irvine, California">'+
+        '<label>Food intolerances / allergies</label><input id="intol" type="text" placeholder="e.g. lactose, none">'+
+        '<div style="height:16px"></div>'+
+        '<button class="btn" id="save">Save & start</button>'+
+      '</div></div>');
+    app.replaceChildren(wrap);
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+    wrap.querySelector("#save").addEventListener("click", function(){
+      var p = {
+        age: wrap.querySelector("#age").value.trim(),
+        height: wrap.querySelector("#height").value.trim(),
+        weight: wrap.querySelector("#weight").value.trim(),
+        location: wrap.querySelector("#location").value.trim(),
+        intolerances: wrap.querySelector("#intol").value.trim()
+      };
+      S.set("cf_profile", p);
+      viewChat(k);
+    });
+  }
+
+  // ---------- Chat ----------
+  function viewChat(k){
+    var c = COACHES[k];
+    var histKey = "cf_chat_"+k;
+    var history = S.get(histKey, []);
+    var wrap = el(
+      '<div>'+
+        '<div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+c.icon+' '+esc(c.name)+'</h2></div>'+
+        '<p class="sub" style="font-size:.7rem;margin:-4px 0 8px">Not medical or therapeutic advice. For diagnosis or a crisis, see a professional.</p>'+
+        '<div class="log" id="log"></div>'+
+        '<div class="inrow"><textarea id="in" rows="1" placeholder="Message '+esc(c.name)+' …"></textarea>'+
+        '<button class="btn" id="send" aria-label="Send">➤</button></div>'+
+      '</div>');
+    app.replaceChildren(wrap);
+    var log = wrap.querySelector("#log"), input = wrap.querySelector("#in"), sendBtn = wrap.querySelector("#send");
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+
+    function render(){
+      log.replaceChildren();
+      if(!history.length){ log.appendChild(el('<div class="msg bot">'+esc(c.greeting||"Hey! What do you need today?")+'</div>')); }
+      history.forEach(function(m){
+        log.appendChild(el('<div class="msg '+(m.role==="user"?"user":"bot")+'">'+esc(m.content).replace(/\n/g,"<br>")+'</div>'));
+      });
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function send(){
+      var text = (input.value||"").trim();
+      if(!text || sendBtn.disabled) return;
+      if(!accessOk()) return viewPaywall();
+      input.value = "";
+      history.push({role:"user", content:text});
+      S.set(histKey, history.slice(-40));
+      render();
+      var typing = el('<div class="msg bot typing">'+esc(c.name)+' is typing …</div>');
+      log.appendChild(typing); window.scrollTo(0,document.body.scrollHeight);
+      sendBtn.disabled = true;
+      fetch(CFG.chatUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          coach:k,
+          token:S.get("cf_token",""),
+          email:S.get("cf_email",""),
+          profile:S.get("cf_profile",null),
+          messages:history.filter(function(m){return !m.error;}).slice(-12).map(function(m){return {role:m.role,content:m.content};})
+        })
+      }).then(function(r){
+        if(r.status===429) throw new Error("rate");
+        if(!r.ok) throw new Error("http");
+        return r.json();
+      }).then(function(d){
+        if(!d.text) throw new Error("empty");
+        history.push({role:"assistant", content:d.text});
+      }).catch(function(){
+        history.push({role:"assistant", content:"Can't reach "+c.name+" right now — try again in a bit.", error:true});
+      }).then(function(){
+        S.set(histKey, history.slice(-40)); sendBtn.disabled=false; render();
+      });
+    }
+    sendBtn.addEventListener("click", send);
+    input.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); }});
+    render();
+  }
+
+  route();
+})();
+</script>
