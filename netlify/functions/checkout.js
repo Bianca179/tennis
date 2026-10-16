@@ -62,6 +62,19 @@ exports.handler = async function (event) {
     // Which coach a single-coach buyer chose (for support and, later, server-side access)
     parts.push('subscription_data[metadata][plan]=' + encodeURIComponent(plan));
     parts.push('metadata[plan]=' + encodeURIComponent(plan));
+    // Partner who brought the buyer (e.g. "lenard"), for commission. Only a short slug is accepted.
+    const ref = (typeof body.ref === 'string' && /^[a-z0-9_-]{1,30}$/i.test(body.ref)) ? body.ref.toLowerCase() : '';
+    if (ref) {
+      parts.push('metadata[ref]=' + encodeURIComponent(ref));
+      parts.push('subscription_data[metadata][ref]=' + encodeURIComponent(ref));
+    }
+    // Auto-renewal disclosure right next to the pay button (US auto-renewal laws, EU transparency).
+    const de = body.lang === 'de';
+    const cancelUrl = origin + (de ? '/kuendigen.html' : '/en/cancel.html');
+    const renewText = de
+      ? 'Monatsabo: verlängert sich automatisch jeden Monat zum angezeigten Preis, bis du kündigst. Jederzeit online kündbar: ' + cancelUrl
+      : 'Monthly subscription: renews automatically every month at the price shown until you cancel. Cancel anytime online: ' + cancelUrl;
+    parts.push('custom_text[submit][message]=' + encodeURIComponent(renewText));
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',
