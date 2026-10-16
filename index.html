@@ -68,6 +68,10 @@
     border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer}
   .pick:hover{border-color:var(--accent)}
   .pick input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent)}
+  .consent{display:flex;gap:10px;align-items:flex-start;margin:14px 0 10px;font-size:.8rem;color:var(--ink-2);line-height:1.4;cursor:pointer}
+  .consent input{width:18px;height:18px;flex:0 0 auto;margin-top:1px;accent-color:var(--accent);padding:0}
+  .consent a,.legal a,p.sub a{color:var(--ink)}
+  .legal{text-align:center;font-size:.72rem;color:var(--ink-2);margin-top:14px}
   .pick.bundle{border-color:rgba(61,125,255,.45);background:rgba(61,125,255,.07)}
   .pk-main{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
   .pk-name{font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -118,6 +122,10 @@
       age: "Age", height: "Height (cm)", weight: "Weight (kg)", where: "Where do you live?", intol: "Food intolerances / allergies",
       phAge: "e.g. 21", phHeight: "e.g. 183", phWeight: "e.g. 76", phWhere: "e.g. Irvine, California", phIntol: "e.g. lactose, none",
       saveStart: "Save & start",
+      legImp: "Imprint", legPriv: "Privacy", legTerms: "Terms & withdrawal",
+      startNow: "I request that coaching starts immediately. If I withdraw within 14 days, I pay only for the days already used.",
+      termsNote: "By subscribing you accept our <a href=\"/agb.html\" target=\"_blank\">terms</a> (German) and note the <a href=\"/agb.html#widerruf\" target=\"_blank\">right of withdrawal</a> and <a href=\"/datenschutz.html\" target=\"_blank\">privacy policy</a>. Cancel monthly.",
+      healthConsent: "I consent to these details (incl. intolerances = health data) being sent to the AI provider Anthropic (USA) so Markus can answer. I can withdraw this anytime. <a href=\"/datenschutz.html\" target=\"_blank\">Privacy</a>",
       chatNote: "Not medical or therapeutic advice. For diagnosis or a crisis, see a professional.",
       message: "Message {name} …", typing: "{name} is typing …", cantReach: "Can't reach {name} right now — try again in a bit.",
       send: "Send", language: "Language"
@@ -152,6 +160,10 @@
       age: "Alter", height: "Größe (cm)", weight: "Gewicht (kg)", where: "Wo wohnst du?", intol: "Unverträglichkeiten / Allergien",
       phAge: "z. B. 21", phHeight: "z. B. 183", phWeight: "z. B. 76", phWhere: "z. B. Stuttgart", phIntol: "z. B. Laktose, keine",
       saveStart: "Speichern & loslegen",
+      legImp: "Impressum", legPriv: "Datenschutz", legTerms: "AGB & Widerruf",
+      startNow: "Ich verlange, dass das Coaching sofort beginnt. Widerrufe ich innerhalb von 14 Tagen, zahle ich nur die bereits genutzten Tage.",
+      termsNote: "Mit dem Abo gelten unsere <a href=\"/agb.html\" target=\"_blank\">AGB</a>; beachte die <a href=\"/agb.html#widerruf\" target=\"_blank\">Widerrufsbelehrung</a> und den <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>. Monatlich kündbar.",
+      healthConsent: "Ich willige ein, dass diese Angaben (inkl. Unverträglichkeiten = Gesundheitsdaten) an den KI-Anbieter Anthropic (USA) übermittelt werden, damit Markus antworten kann. Widerruf jederzeit möglich. <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>",
       chatNote: "Keine medizinische oder therapeutische Beratung. Für Diagnosen oder in einer Krise: bitte Fachleute fragen.",
       message: "Nachricht an {name} …", typing: "{name} schreibt …", cantReach: "{name} ist gerade nicht erreichbar – versuch es gleich noch einmal.",
       send: "Senden", language: "Sprache"
@@ -186,6 +198,10 @@
       age: "Âge", height: "Taille (cm)", weight: "Poids (kg)", where: "Où habites-tu ?", intol: "Intolérances / allergies",
       phAge: "ex. 21", phHeight: "ex. 183", phWeight: "ex. 76", phWhere: "ex. Lyon", phIntol: "ex. lactose, aucune",
       saveStart: "Enregistrer & commencer",
+      legImp: "Mentions légales", legPriv: "Confidentialité", legTerms: "CGV & rétractation",
+      startNow: "Je demande que le coaching commence immédiatement. Si je me rétracte sous 14 jours, je ne paie que les jours déjà utilisés.",
+      termsNote: "En t'abonnant, tu acceptes nos <a href=\"/agb.html\" target=\"_blank\">CGV</a> (en allemand) et prends note du <a href=\"/agb.html#widerruf\" target=\"_blank\">droit de rétractation</a> et de la <a href=\"/datenschutz.html\" target=\"_blank\">confidentialité</a>. Résiliable chaque mois.",
+      healthConsent: "J'accepte que ces données (y compris intolérances = données de santé) soient transmises au fournisseur d'IA Anthropic (USA) pour que Markus puisse répondre. Révocable à tout moment. <a href=\"/datenschutz.html\" target=\"_blank\">Confidentialité</a>",
       chatNote: "Pas un avis médical ou thérapeutique. Pour un diagnostic ou une crise, consulte un professionnel.",
       message: "Message à {name} …", typing: "{name} écrit …", cantReach: "{name} n'est pas joignable pour le moment — réessaie dans un instant.",
       send: "Envoyer", language: "Langue"
@@ -287,6 +303,12 @@
   }
 
   // ---------- Onboarding + email capture → trial ----------
+  function legalLinks(){
+    return '<p class="legal"><a href="/impressum.html">'+esc(t("legImp"))+'</a> · '+
+      '<a href="/datenschutz.html">'+esc(t("legPriv"))+'</a> · '+
+      '<a href="/agb.html">'+esc(t("legTerms"))+'</a></p>';
+  }
+
   function viewOnboard(){
     rerender = viewOnboard;
     var wrap = el(
@@ -304,6 +326,7 @@
           '<p class="sub" style="margin:0;font-size:.8rem"><strong>'+esc(t("important"))+'</strong> '+esc(t("disclaimer"))+'</p>'+
         '</div>'+
         '<p class="sub" style="margin-top:14px;font-size:.72rem">'+esc(t("agree"))+'</p>'+
+        legalLinks()+
       '</div>');
     app.replaceChildren(wrap); bindLang(wrap);
     var input = wrap.querySelector("#em"), btn = wrap.querySelector("#go");
@@ -347,16 +370,20 @@
         '<h1>'+esc(t("chooseTitle"))+'</h1>'+
         '<p class="sub">'+esc(t("chooseSub"))+'</p>'+
         '<div class="picks">'+ bundleOpt + opts +'</div>'+
+        '<label class="consent"><input type="checkbox" id="startnow"><span>'+esc(t("startNow"))+'</span></label>'+
+        '<p class="sub" style="margin:0 0 12px;font-size:.78rem">'+t("termsNote")+'</p>'+
         '<button class="btn" id="buy" disabled>'+esc(t("toCheckout"))+'</button>'+
         '<p class="sub" id="buyerr" style="margin-top:10px;font-size:.8rem;color:var(--accent);display:none"></p>'+
         '<p class="sub" style="margin-top:16px;font-size:.8rem">'+esc(t("alreadyBought"))+'</p>'+
         '<p class="sub" style="margin-top:10px;font-size:.72rem">'+esc(t("disclaimer"))+'</p>'+
+        legalLinks()+
       '</div>');
     app.replaceChildren(wrap); bindLang(wrap);
 
+    var startNow = wrap.querySelector("#startnow");
     var buy = wrap.querySelector("#buy");
     var errBox = wrap.querySelector("#buyerr");
-    var boxes = Array.prototype.slice.call(wrap.querySelectorAll('input[type=checkbox]'));
+    var boxes = Array.prototype.slice.call(wrap.querySelectorAll('.pick input[type=checkbox]'));
     var bundleBox = wrap.querySelector('.pick.bundle input');
 
     function selectedKeys(){
@@ -375,13 +402,14 @@
       } else {
         boxes.forEach(function(x){ x.disabled=false; });
       }
-      buy.disabled = selectedKeys().length===0;
+      buy.disabled = selectedKeys().length===0 || !startNow.checked;
     }
     boxes.forEach(function(x){ x.addEventListener("change", sync); });
+    startNow.addEventListener("change", sync);
 
     buy.addEventListener("click", function(){
       var items = selectedKeys();
-      if(!items.length) return;
+      if(!items.length || !startNow.checked) return;
       buy.disabled = true; buy.textContent = t("openingCheckout"); errBox.style.display="none";
       fetch(CFG.checkoutUrl,{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ items:items, period:"monthly", email:S.get("cf_email","") })})
@@ -426,6 +454,7 @@
         '</div>'+
         '<div class="trialbar">'+ trialLine +'</div>'+
         '<p class="sub" style="margin-top:16px;font-size:.72rem;text-align:center">'+esc(t("disclaimer"))+'</p>'+
+        legalLinks()+
       '</div>');
     app.replaceChildren(wrap); bindLang(wrap);
     wrap.querySelectorAll("[data-coach]").forEach(function(b){
@@ -484,12 +513,15 @@
         '<label>'+esc(t("weight"))+'</label><input id="weight" type="number" inputmode="numeric" placeholder="'+esc(t("phWeight"))+'">'+
         '<label>'+esc(t("where"))+'</label><input id="location" type="text" placeholder="'+esc(t("phWhere"))+'">'+
         '<label>'+esc(t("intol"))+'</label><input id="intol" type="text" placeholder="'+esc(t("phIntol"))+'">'+
-        '<div style="height:16px"></div>'+
-        '<button class="btn" id="save">'+esc(t("saveStart"))+'</button>'+
+        '<label class="consent"><input type="checkbox" id="hc"><span>'+t("healthConsent")+'</span></label>'+
+        '<button class="btn" id="save" disabled>'+esc(t("saveStart"))+'</button>'+
       '</div></div>');
     app.replaceChildren(wrap);
     wrap.querySelector("#bk").addEventListener("click", viewHome);
-    wrap.querySelector("#save").addEventListener("click", function(){
+    var hc = wrap.querySelector("#hc"), save = wrap.querySelector("#save");
+    hc.addEventListener("change", function(){ save.disabled = !hc.checked; });
+    save.addEventListener("click", function(){
+      if(!hc.checked) return;
       var p = {
         age: wrap.querySelector("#age").value.trim(),
         height: wrap.querySelector("#height").value.trim(),
