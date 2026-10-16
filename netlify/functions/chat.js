@@ -6,7 +6,7 @@
 // mobility, with his knowledge base). The COACHES map holds their system prompts.
 //
 // Environment variables (Netlify → Site settings → Environment):
-//   ANTHROPIC_API_KEY  (required)  your Claude API key
+//   ANTHROPIC_API_KEY  (required)  your Claude API key (ANTHROPIC_KEY also accepted)
 //   ACCESS_TOKENS      (optional)  comma-separated valid purchase tokens
 //   ALLOWED_ORIGINS    (optional)  comma-separated allowed origins (e.g. https://your-site.netlify.app)
 
@@ -151,7 +151,7 @@ exports.handler = async function (event) {
       };
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY;
     if (!apiKey) {
       return { statusCode: 500, body: JSON.stringify({ error: 'server_not_configured' }) };
     }

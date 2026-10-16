@@ -36,7 +36,7 @@ manifest.json                  → PWA (add to home screen)
 1. Push this folder to a GitHub repo.
 2. Netlify → **Add new site → Import from Git**, pick the repo. `netlify.toml` is read automatically.
 3. **Site settings → Environment variables:**
-   - `ANTHROPIC_API_KEY` (required) — your Claude API key.
+   - `ANTHROPIC_API_KEY` or `ANTHROPIC_KEY` (required) — your Claude API key.
    - `ALLOWED_ORIGINS` (before launch) — your live URL, e.g. `https://matchplan.netlify.app`.
    - `ACCESS_TOKENS` (optional) — comma-separated purchase tokens for paid users.
    - **Lead capture → Airtable "Steuerzentrale":**
