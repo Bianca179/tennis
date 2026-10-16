@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Kündigen oder widerrufen — Matchplan</title>
+<style>
+  :root{--bg:#0e1726;--surface:#16223a;--ink:#f4f7fb;--ink-2:#a9b6cc;--line:rgba(255,255,255,.10);--accent:#3d7dff}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+  main{max-width:680px;margin:0 auto;padding:28px 16px 48px}
+  h1{font-size:1.5rem;margin:0 0 6px}
+  h2{font-size:1.05rem;margin:26px 0 8px}
+  p,li{color:var(--ink-2)}
+  strong{color:var(--ink)}
+  a{color:var(--accent)}
+  .note{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.88rem}
+  .box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  nav{font-size:.85rem;margin-bottom:18px}
+  nav a{margin-right:14px}
+  label{display:block;font-size:.85rem;color:var(--ink-2);margin:14px 0 6px}
+  input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:1rem;font-family:inherit}
+  .opts label{display:flex;gap:10px;align-items:flex-start;margin:8px 0;color:var(--ink);font-size:.95rem;cursor:pointer}
+  .opts input{width:18px;height:18px;flex:0 0 auto;margin-top:2px}
+  .btn{display:block;width:100%;margin-top:18px;padding:14px;border:none;border-radius:999px;background:var(--accent);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink-2)}
+  .btn:disabled{opacity:.5}
+  .err{color:#ff8a8a;font-size:.88rem;margin-top:10px}
+  .hp{position:absolute;left:-9999px}
+  dl{margin:0}dt{color:var(--ink-2);font-size:.8rem;margin-top:10px}dd{margin:2px 0 0;color:var(--ink)}
+  @media print{nav,.btn,.note{display:none}body,main{background:#fff;color:#000}dd,strong{color:#000}}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="/">‹ Zur App</a><a href="/impressum.html">Impressum</a><a href="/datenschutz.html">Datenschutz</a><a href="/agb.html">AGB &amp; Widerruf</a><a href="/kuendigen.html">Verträge hier kündigen</a><a href="/kuendigen.html?art=widerruf">Vertrag widerrufen</a></nav>
+<h1 id="titel">Verträge hier kündigen</h1>
+<p id="intro">Hier kündigst oder widerrufst du dein Matchplan-Abo. Du bekommst sofort eine Eingangsbestätigung per E-Mail.</p>
+
+<form id="f" class="box" novalidate>
+  <div class="opts" role="radiogroup" aria-label="Art der Erklärung">
+    <label><input type="radio" name="art" value="kuendigung" checked> <span><strong>Ordentliche Kündigung</strong><br><small>zum Ende des laufenden Abrechnungsmonats</small></span></label>
+    <label><input type="radio" name="art" value="ausserordentlich"> <span><strong>Außerordentliche Kündigung</strong><br><small>fristlos aus wichtigem Grund</small></span></label>
+    <label><input type="radio" name="art" value="widerruf"> <span><strong>Widerruf</strong><br><small>innerhalb von 14 Tagen nach Vertragsschluss</small></span></label>
+  </div>
+  <label for="name">Vor- und Nachname</label>
+  <input id="name" autocomplete="name" maxlength="120" required>
+  <label for="email">E-Mail-Adresse, mit der du bestellt hast</label>
+  <input id="email" type="email" autocomplete="email" maxlength="200" required>
+  <label for="vertrag">Welches Abo?</label>
+  <select id="vertrag">
+    <option>Matchplan – 1 Coach</option>
+    <option>Matchplan – alle drei Coaches</option>
+    <option>Weiß ich nicht genau</option>
+  </select>
+  <div id="zp">
+    <label for="zeitpunkt">Zu wann?</label>
+    <select id="zeitpunkt">
+      <option value="naechstmoeglich">Zum nächstmöglichen Zeitpunkt</option>
+      <option value="datum">Zu einem bestimmten Datum</option>
+    </select>
+    <input id="datum" type="date" style="margin-top:8px;display:none">
+  </div>
+  <div id="gr" style="display:none">
+    <label for="grund">Wichtiger Grund</label>
+    <textarea id="grund" rows="3" maxlength="1000"></textarea>
+  </div>
+  <input class="hp" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <p class="err" id="err" style="display:none"></p>
+  <button class="btn" id="weiter" type="submit">Weiter</button>
+</form>
+
+<div id="pruef" class="box" style="display:none">
+  <p><strong>Bitte prüfen:</strong></p>
+  <dl id="zus"></dl>
+  <p class="err" id="err2" style="display:none"></p>
+  <button class="btn" id="senden" type="button">Jetzt kündigen</button>
+  <button class="btn ghost" id="zurueck" type="button">Zurück</button>
+</div>
+
+<div id="fertig" class="box" style="display:none">
+  <p><strong>Eingegangen.</strong> <span id="mailhinweis"></span></p>
+  <dl id="beleg"></dl>
+  <button class="btn ghost" type="button" onclick="window.print()">Bestätigung speichern oder drucken</button>
+</div>
+
+<script>
+(function(){
+  var URL_ = 'https://aiva179.app.n8n.cloud/webhook/matchplan-vertrag';
+  var $ = function(id){ return document.getElementById(id); };
+  var TXT = {
+    kuendigung: { t: 'Verträge hier kündigen', btn: 'Jetzt kündigen', name: 'Ordentliche Kündigung' },
+    ausserordentlich: { t: 'Verträge hier kündigen', btn: 'Jetzt kündigen', name: 'Außerordentliche Kündigung' },
+    widerruf: { t: 'Vertrag widerrufen', btn: 'Widerruf bestätigen', name: 'Widerruf' }
+  };
+  var radios = document.querySelectorAll('input[name=art]');
+  var start = new URLSearchParams(location.search).get('art');
+  if (TXT[start]) radios.forEach(function(r){ r.checked = r.value === start; });
+  function art(){ var v='kuendigung'; radios.forEach(function(r){ if(r.checked) v=r.value; }); return v; }
+  function sync(){
+    var a = art();
+    $('titel').textContent = TXT[a].t;
+    $('zp').style.display = a === 'kuendigung' ? '' : 'none';
+    $('gr').style.display = a === 'ausserordentlich' ? '' : 'none';
+    $('datum').style.display = (a === 'kuendigung' && $('zeitpunkt').value === 'datum') ? '' : 'none';
+    $('senden').textContent = TXT[a].btn;
+  }
+  radios.forEach(function(r){ r.addEventListener('change', sync); });
+  $('zeitpunkt').addEventListener('change', sync);
+  sync();
+
+  function daten(){
+    var a = art(), zp = '';
+    if (a === 'kuendigung') zp = $('zeitpunkt').value === 'datum' && $('datum').value
+      ? new Date($('datum').value + 'T12:00:00').toLocaleDateString('de-DE') : 'naechstmoeglich';
+    return { art: a, name: $('name').value.trim(), email: $('email').value.trim(), vertrag: $('vertrag').value,
+      zeitpunkt: zp, grund: a === 'ausserordentlich' ? $('grund').value.trim() : '', website: $('website').value };
+  }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function liste(paare){ return paare.filter(function(p){ return p[1]; }).map(function(p){ return '<dt>'+esc(p[0])+'</dt><dd>'+esc(p[1])+'</dd>'; }).join(''); }
+
+  $('f').addEventListener('submit', function(e){
+    e.preventDefault();
+    var d = daten(), err = '';
+    if (d.name.length < 2) err = 'Bitte gib deinen Namen an.';
+    else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)) err = 'Bitte gib eine gültige E-Mail-Adresse an.';
+    else if (d.art === 'ausserordentlich' && d.grund.length < 3) err = 'Bitte nenne den wichtigen Grund.';
+    else if (d.art === 'kuendigung' && $('zeitpunkt').value === 'datum' && !$('datum').value) err = 'Bitte wähle ein Datum.';
+    $('err').textContent = err; $('err').style.display = err ? '' : 'none';
+    if (err) return;
+    $('zus').innerHTML = liste([['Art', TXT[d.art].name], ['Name', d.name], ['E-Mail', d.email], ['Abo', d.vertrag],
+      ['Zeitpunkt', d.art === 'kuendigung' ? (d.zeitpunkt === 'naechstmoeglich' ? 'nächstmöglicher Zeitpunkt' : d.zeitpunkt) : 'sofort'], ['Grund', d.grund]]);
+    $('f').style.display = 'none'; $('pruef').style.display = ''; window.scrollTo(0, 0);
+  });
+  $('zurueck').addEventListener('click', function(){ $('pruef').style.display = 'none'; $('f').style.display = ''; });
+  $('senden').addEventListener('click', function(){
+    var b = $('senden'); b.disabled = true; b.textContent = 'Wird gesendet …'; $('err2').style.display = 'none';
+    fetch(URL_, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(daten()) })
+      .then(function(r){ return r.json(); })
+      .then(function(r){
+        if (!r || !r.ok) throw new Error('fehler');
+        var d = daten();
+        $('beleg').innerHTML = liste([['Art', r.art], ['Name', d.name], ['E-Mail', d.email], ['Abo', d.vertrag], ['Beendigung', r.ende], ['Grund', d.grund], ['Eingegangen am', r.eingang], ['Referenz', r.ref]]);
+        $('mailhinweis').textContent = r.mail ? 'Die Bestätigung ist per E-Mail an dich unterwegs.' : 'Die Bestätigungs-E-Mail konnte gerade nicht gesendet werden. Deine Erklärung ist trotzdem eingegangen – bitte speichere diese Seite.';
+        $('pruef').style.display = 'none'; $('fertig').style.display = ''; $('intro').style.display = 'none'; window.scrollTo(0, 0);
+      })
+      .catch(function(){
+        b.disabled = false; sync();
+        $('err2').textContent = 'Das hat nicht geklappt. Bitte versuche es noch einmal oder schreib an bianca@enderlin.info.';
+        $('err2').style.display = '';
+      });
+  });
+})();
+</script>
+</main>
+</body>
+</html>

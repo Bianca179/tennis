@@ -122,7 +122,7 @@
       age: "Age", height: "Height (cm)", weight: "Weight (kg)", where: "Where do you live?", intol: "Food intolerances / allergies",
       phAge: "e.g. 21", phHeight: "e.g. 183", phWeight: "e.g. 76", phWhere: "e.g. Irvine, California", phIntol: "e.g. lactose, none",
       saveStart: "Save & start",
-      legImp: "Imprint", legPriv: "Privacy", legTerms: "Terms & withdrawal",
+      legImp: "Imprint", legPriv: "Privacy", legTerms: "Terms & withdrawal", legCancel: "Cancel contracts here", legWithdraw: "Withdraw from contract",
       startNow: "I request that coaching starts immediately. If I withdraw within 14 days, I pay only for the days already used.",
       termsNote: "By subscribing you accept our <a href=\"/agb.html\" target=\"_blank\">terms</a> (German) and note the <a href=\"/agb.html#widerruf\" target=\"_blank\">right of withdrawal</a> and <a href=\"/datenschutz.html\" target=\"_blank\">privacy policy</a>. Cancel monthly.",
       healthConsent: "I consent to these details (incl. intolerances = health data) being sent to the AI provider Anthropic (USA) so Markus can answer. I can withdraw this anytime. <a href=\"/datenschutz.html\" target=\"_blank\">Privacy</a>",
@@ -160,7 +160,7 @@
       age: "Alter", height: "Größe (cm)", weight: "Gewicht (kg)", where: "Wo wohnst du?", intol: "Unverträglichkeiten / Allergien",
       phAge: "z. B. 21", phHeight: "z. B. 183", phWeight: "z. B. 76", phWhere: "z. B. Stuttgart", phIntol: "z. B. Laktose, keine",
       saveStart: "Speichern & loslegen",
-      legImp: "Impressum", legPriv: "Datenschutz", legTerms: "AGB & Widerruf",
+      legImp: "Impressum", legPriv: "Datenschutz", legTerms: "AGB & Widerruf", legCancel: "Verträge hier kündigen", legWithdraw: "Vertrag widerrufen",
       startNow: "Ich verlange, dass das Coaching sofort beginnt. Widerrufe ich innerhalb von 14 Tagen, zahle ich nur die bereits genutzten Tage.",
       termsNote: "Mit dem Abo gelten unsere <a href=\"/agb.html\" target=\"_blank\">AGB</a>; beachte die <a href=\"/agb.html#widerruf\" target=\"_blank\">Widerrufsbelehrung</a> und den <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>. Monatlich kündbar.",
       healthConsent: "Ich willige ein, dass diese Angaben (inkl. Unverträglichkeiten = Gesundheitsdaten) an den KI-Anbieter Anthropic (USA) übermittelt werden, damit Markus antworten kann. Widerruf jederzeit möglich. <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>",
@@ -198,7 +198,7 @@
       age: "Âge", height: "Taille (cm)", weight: "Poids (kg)", where: "Où habites-tu ?", intol: "Intolérances / allergies",
       phAge: "ex. 21", phHeight: "ex. 183", phWeight: "ex. 76", phWhere: "ex. Lyon", phIntol: "ex. lactose, aucune",
       saveStart: "Enregistrer & commencer",
-      legImp: "Mentions légales", legPriv: "Confidentialité", legTerms: "CGV & rétractation",
+      legImp: "Mentions légales", legPriv: "Confidentialité", legTerms: "CGV & rétractation", legCancel: "Résilier le contrat ici", legWithdraw: "Se rétracter du contrat",
       startNow: "Je demande que le coaching commence immédiatement. Si je me rétracte sous 14 jours, je ne paie que les jours déjà utilisés.",
       termsNote: "En t'abonnant, tu acceptes nos <a href=\"/agb.html\" target=\"_blank\">CGV</a> (en allemand) et prends note du <a href=\"/agb.html#widerruf\" target=\"_blank\">droit de rétractation</a> et de la <a href=\"/datenschutz.html\" target=\"_blank\">confidentialité</a>. Résiliable chaque mois.",
       healthConsent: "J'accepte que ces données (y compris intolérances = données de santé) soient transmises au fournisseur d'IA Anthropic (USA) pour que Markus puisse répondre. Révocable à tout moment. <a href=\"/datenschutz.html\" target=\"_blank\">Confidentialité</a>",
@@ -306,7 +306,9 @@
   function legalLinks(){
     return '<p class="legal"><a href="/impressum.html">'+esc(t("legImp"))+'</a> · '+
       '<a href="/datenschutz.html">'+esc(t("legPriv"))+'</a> · '+
-      '<a href="/agb.html">'+esc(t("legTerms"))+'</a></p>';
+      '<a href="/agb.html">'+esc(t("legTerms"))+'</a><br>'+
+      '<a href="/kuendigen.html">'+esc(t("legCancel"))+'</a> · '+
+      '<a href="/kuendigen.html?art=widerruf">'+esc(t("legWithdraw"))+'</a></p>';
   }
 
   function viewOnboard(){
