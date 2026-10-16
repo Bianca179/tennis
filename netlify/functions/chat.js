@@ -121,7 +121,7 @@ exports.handler = async function (event) {
   }
 
   try {
-    const { messages, token, profile, coach } = JSON.parse(event.body || '{}');
+    const { messages, token, profile, coach, lang } = JSON.parse(event.body || '{}');
     if (!Array.isArray(messages)) {
       return { statusCode: 400, body: JSON.stringify({ error: 'bad_request' }) };
     }
@@ -156,6 +156,12 @@ exports.handler = async function (event) {
     ];
     const pb = profileBlock(profile);
     if (pb) system.push({ type: 'text', text: pb });
+    // Language picked in the app (EN/DE/FR). Sits after the cache breakpoint, so the
+    // cached coach prompt stays shared across languages.
+    const LANG_NAMES = { en: 'English', de: 'German', fr: 'French' };
+    if (LANG_NAMES[lang]) {
+      system.push({ type: 'text', text: 'The player chose ' + LANG_NAMES[lang] + ' in the app. Reply in ' + LANG_NAMES[lang] + ', unless the player clearly writes in another language.' });
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

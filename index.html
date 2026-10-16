@@ -74,6 +74,10 @@
   .pk-tag{font-size:.8rem;color:var(--ink-2)}
   .pk-price{font-weight:700;white-space:nowrap}
   .hidden{display:none}
+  .langsw{display:flex;gap:4px;justify-content:flex-end;margin-bottom:8px}
+  .langsw button{font:inherit;font-size:.72rem;font-weight:700;letter-spacing:.04em;padding:5px 9px;border-radius:999px;
+    border:1px solid var(--line);background:none;color:var(--ink-2);cursor:pointer}
+  .langsw button[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
 </style>
 
 <div id="app"></div>
@@ -81,10 +85,133 @@
 <script>
 (function(){
   "use strict";
-  var DISCLAIMER = "These coaches give performance, nutrition and mindset support. "+
-    "They are NOT medical, psychological or therapeutic advice, and NOT a substitute for a "+
-    "doctor, dietitian or therapist. Don't use them for diagnosis or treatment. "+
-    "If you're in crisis or need medical help, contact a qualified professional or emergency services.";
+  // ---------- Language (EN / DE / FR) ----------
+  // Picked once, remembered on this device; the coaches answer in the same language.
+  var I18N = {
+    en: {
+      disclaimer: "These coaches give performance, nutrition and mindset support. They are NOT medical, psychological or therapeutic advice, and NOT a substitute for a doctor, dietitian or therapist. Don't use them for diagnosis or treatment. If you're in crisis or need medical help, contact a qualified professional or emergency services.",
+      onbTitle: "Your coaches, in one place 🎾",
+      onbSub: "Markus for performance & nutrition, Sam for the mental game, a fitness coach for mobility — grounded in your body data. Start your free {n}-day trial.",
+      email: "Your email", startTrial: "Start free trial", starting: "Starting…",
+      noCard: "No card required. We'll only email you about your coaching.",
+      important: "Important.", agree: "By starting, you agree this is not medical or therapeutic advice.",
+      tagMarkus: "Performance & nutrition", tagSam: "Mental game", tagFitness: "Stretching & mobility",
+      bundleName: "All three (bundle)", bestValue: "Best value", perMonth: "/ mo",
+      chooseTitle: "Choose your coaching", chooseSub: "Pick a single coach, mix a few, or take all three as a bundle. You can change later.",
+      toCheckout: "Continue to checkout", openingCheckout: "Opening checkout…", checkoutErr: "Sorry — couldn't start checkout. Please try again.",
+      alreadyBought: "Already bought? Open the link from your purchase email — it unlocks this app.",
+      fullAccess: "Full access", trialLeft: "Free trial · {n} day left", trialLeftPl: "Free trial · {n} days left",
+      soon: "Soon", homeTitle: "Your coaches", homeSub: "Pick who you want to talk to.",
+      whoopTile: "Connect your Whoop", whoopTileSub: "Ground your briefing in real recovery, sleep & strain.",
+      coachSam: "Mental game — matches, pressure, focus.", coachMarkus: "Performance & nutrition — fuel, load, recovery.", coachFitness: "Stretching & mobility routines.",
+      greetMarkus: "Hey — I've got your profile. What's on for today: a training day, a match, or figuring out what to eat?",
+      greetDefault: "Hey! What do you need today?",
+      soonText: "{name} is coming soon. It will bring a full library of stretching and mobility routines.",
+      whoopTitle: "Connect Whoop",
+      whoopP1: "Connecting your Whoop lets your morning briefing use your real recovery, sleep and strain — the difference between generic advice and advice for <em>your</em> body today.",
+      whoopP2: "Setup is done together so it's connected correctly to your account. Request access and we'll get you set up.",
+      whoopBtn: "Request Whoop setup", whoopSent: "Request sent ✓",
+      intakeTitle: "A few things about you", intakeSub: "Markus uses this to tailor fuel and training to you. Stays private.",
+      age: "Age", height: "Height (cm)", weight: "Weight (kg)", where: "Where do you live?", intol: "Food intolerances / allergies",
+      phAge: "e.g. 21", phHeight: "e.g. 183", phWeight: "e.g. 76", phWhere: "e.g. Irvine, California", phIntol: "e.g. lactose, none",
+      saveStart: "Save & start",
+      chatNote: "Not medical or therapeutic advice. For diagnosis or a crisis, see a professional.",
+      message: "Message {name} …", typing: "{name} is typing …", cantReach: "Can't reach {name} right now — try again in a bit.",
+      send: "Send", language: "Language"
+    },
+    de: {
+      disclaimer: "Diese Coaches unterstützen bei Leistung, Ernährung und mentaler Stärke. Sie sind KEINE medizinische, psychologische oder therapeutische Beratung und ersetzen keine Ärztin, keinen Arzt, keine Ernährungsberatung und keine Therapie. Nutze sie nicht für Diagnosen oder Behandlungen. In einer Krise oder bei medizinischen Fragen wende dich an Fachleute oder den Notruf.",
+      onbTitle: "Deine Coaches an einem Ort 🎾",
+      onbSub: "Markus für Leistung und Ernährung, Sam für den Kopf, ein Fitness-Coach für Beweglichkeit – abgestimmt auf deine Körperdaten. Starte deine kostenlose {n}-Tage-Testphase.",
+      email: "Deine E-Mail", startTrial: "Kostenlos testen", starting: "Wird gestartet …",
+      noCard: "Keine Kreditkarte nötig. Wir schreiben dir nur zu deinem Coaching.",
+      important: "Wichtig.", agree: "Mit dem Start bestätigst du, dass dies keine medizinische oder therapeutische Beratung ist.",
+      tagMarkus: "Leistung & Ernährung", tagSam: "Mentale Stärke", tagFitness: "Dehnen & Beweglichkeit",
+      bundleName: "Alle drei (Paket)", bestValue: "Bester Preis", perMonth: "/ Monat",
+      chooseTitle: "Wähle dein Coaching", chooseSub: "Ein Coach, mehrere oder alle drei im Paket. Du kannst später wechseln.",
+      toCheckout: "Weiter zur Bezahlung", openingCheckout: "Bezahlung wird geöffnet …", checkoutErr: "Die Bezahlung konnte nicht gestartet werden. Bitte versuch es noch einmal.",
+      alreadyBought: "Schon gekauft? Öffne den Link aus deiner Kauf-E-Mail – er schaltet die App frei.",
+      fullAccess: "Voller Zugang", trialLeft: "Testphase · noch {n} Tag", trialLeftPl: "Testphase · noch {n} Tage",
+      soon: "Bald", homeTitle: "Deine Coaches", homeSub: "Mit wem willst du sprechen?",
+      whoopTile: "Whoop verbinden", whoopTileSub: "Dein Briefing mit echter Erholung, Schlaf und Belastung.",
+      coachSam: "Mentale Stärke – Matches, Druck, Fokus.", coachMarkus: "Leistung & Ernährung – Energie, Belastung, Erholung.", coachFitness: "Dehn- und Mobility-Routinen.",
+      greetMarkus: "Hey – dein Profil habe ich. Was steht heute an: Training, ein Match oder die Frage, was du essen sollst?",
+      greetDefault: "Hey! Was brauchst du heute?",
+      soonText: "{name} kommt bald – mit einer ganzen Bibliothek an Dehn- und Mobility-Routinen.",
+      whoopTitle: "Whoop verbinden",
+      whoopP1: "Mit deinem Whoop nutzt dein Morgen-Briefing deine echte Erholung, deinen Schlaf und deine Belastung – der Unterschied zwischen allgemeinen Tipps und Tipps für <em>deinen</em> Körper heute.",
+      whoopP2: "Die Einrichtung machen wir gemeinsam, damit alles richtig mit deinem Konto verbunden ist. Fordere sie an, wir melden uns.",
+      whoopBtn: "Whoop-Einrichtung anfragen", whoopSent: "Anfrage gesendet ✓",
+      intakeTitle: "Ein paar Dinge über dich", intakeSub: "Damit stimmt Markus Ernährung und Training auf dich ab. Bleibt privat.",
+      age: "Alter", height: "Größe (cm)", weight: "Gewicht (kg)", where: "Wo wohnst du?", intol: "Unverträglichkeiten / Allergien",
+      phAge: "z. B. 21", phHeight: "z. B. 183", phWeight: "z. B. 76", phWhere: "z. B. Stuttgart", phIntol: "z. B. Laktose, keine",
+      saveStart: "Speichern & loslegen",
+      chatNote: "Keine medizinische oder therapeutische Beratung. Für Diagnosen oder in einer Krise: bitte Fachleute fragen.",
+      message: "Nachricht an {name} …", typing: "{name} schreibt …", cantReach: "{name} ist gerade nicht erreichbar – versuch es gleich noch einmal.",
+      send: "Senden", language: "Sprache"
+    },
+    fr: {
+      disclaimer: "Ces coachs t'accompagnent sur la performance, la nutrition et le mental. Ils ne remplacent PAS un avis médical, psychologique ou thérapeutique, ni un médecin, un diététicien ou un thérapeute. Ne les utilise pas pour un diagnostic ou un traitement. En cas de crise ou de besoin médical, contacte un professionnel qualifié ou les urgences.",
+      onbTitle: "Tes coachs, au même endroit 🎾",
+      onbSub: "Markus pour la performance et la nutrition, Sam pour le mental, un coach fitness pour la mobilité — à partir de tes données corporelles. Commence ton essai gratuit de {n} jours.",
+      email: "Ton e-mail", startTrial: "Commencer l'essai gratuit", starting: "Démarrage…",
+      noCard: "Aucune carte requise. Nous t'écrirons uniquement au sujet de ton coaching.",
+      important: "Important.", agree: "En commençant, tu acceptes qu'il ne s'agit pas d'un avis médical ou thérapeutique.",
+      tagMarkus: "Performance & nutrition", tagSam: "Mental", tagFitness: "Étirements & mobilité",
+      bundleName: "Les trois (pack)", bestValue: "Meilleur prix", perMonth: "/ mois",
+      chooseTitle: "Choisis ton coaching", chooseSub: "Un seul coach, plusieurs, ou les trois en pack. Tu pourras changer plus tard.",
+      toCheckout: "Passer au paiement", openingCheckout: "Ouverture du paiement…", checkoutErr: "Désolé — impossible de lancer le paiement. Réessaie.",
+      alreadyBought: "Déjà acheté ? Ouvre le lien de ton e-mail d'achat — il débloque l'appli.",
+      fullAccess: "Accès complet", trialLeft: "Essai gratuit · {n} jour restant", trialLeftPl: "Essai gratuit · {n} jours restants",
+      soon: "Bientôt", homeTitle: "Tes coachs", homeSub: "Avec qui veux-tu parler ?",
+      whoopTile: "Connecter ton Whoop", whoopTileSub: "Un briefing basé sur ta vraie récupération, ton sommeil et ta charge.",
+      coachSam: "Mental — matchs, pression, concentration.", coachMarkus: "Performance & nutrition — énergie, charge, récupération.", coachFitness: "Routines d'étirements et de mobilité.",
+      greetMarkus: "Salut — j'ai ton profil. Qu'est-ce qui est prévu aujourd'hui : entraînement, match, ou savoir quoi manger ?",
+      greetDefault: "Salut ! De quoi as-tu besoin aujourd'hui ?",
+      soonText: "{name} arrive bientôt, avec toute une bibliothèque de routines d'étirements et de mobilité.",
+      whoopTitle: "Connecter Whoop",
+      whoopP1: "Avec ton Whoop, ton briefing du matin utilise ta vraie récupération, ton sommeil et ta charge — la différence entre des conseils génériques et des conseils pour <em>ton</em> corps aujourd'hui.",
+      whoopP2: "La configuration se fait ensemble pour que tout soit bien relié à ton compte. Fais la demande et on s'en occupe.",
+      whoopBtn: "Demander la configuration Whoop", whoopSent: "Demande envoyée ✓",
+      intakeTitle: "Quelques infos sur toi", intakeSub: "Markus s'en sert pour adapter nutrition et entraînement. Reste privé.",
+      age: "Âge", height: "Taille (cm)", weight: "Poids (kg)", where: "Où habites-tu ?", intol: "Intolérances / allergies",
+      phAge: "ex. 21", phHeight: "ex. 183", phWeight: "ex. 76", phWhere: "ex. Lyon", phIntol: "ex. lactose, aucune",
+      saveStart: "Enregistrer & commencer",
+      chatNote: "Pas un avis médical ou thérapeutique. Pour un diagnostic ou une crise, consulte un professionnel.",
+      message: "Message à {name} …", typing: "{name} écrit …", cantReach: "{name} n'est pas joignable pour le moment — réessaie dans un instant.",
+      send: "Envoyer", language: "Langue"
+    }
+  };
+  var LANG = (function(){
+    try{ var v = JSON.parse(localStorage.getItem("cf_lang")); if(I18N[v]) return v; }catch(e){}
+    var n = String(navigator.language||"en").slice(0,2).toLowerCase();
+    return I18N[n] ? n : "en";
+  })();
+  document.documentElement.lang = LANG;
+  function t(k, vars){
+    var s = (I18N[LANG] && I18N[LANG][k]) || I18N.en[k] || k;
+    if(vars) Object.keys(vars).forEach(function(v){ s = s.split("{"+v+"}").join(vars[v]); });
+    return s;
+  }
+  // The language switch re-draws whatever screen is open.
+  var rerender = function(){ route(); };
+  function langSwitch(){
+    var h = '<div class="langsw" role="group" aria-label="'+t("language")+'">';
+    ["en","de","fr"].forEach(function(l){
+      h += '<button type="button" data-lang="'+l+'" aria-pressed="'+(l===LANG)+'">'+l.toUpperCase()+'</button>';
+    });
+    return h + '</div>';
+  }
+  function bindLang(wrap){
+    wrap.querySelectorAll("[data-lang]").forEach(function(b){
+      b.addEventListener("click", function(){
+        LANG = b.getAttribute("data-lang");
+        try{ localStorage.setItem("cf_lang", JSON.stringify(LANG)); }catch(e){}
+        document.documentElement.lang = LANG;
+        rerender();
+      });
+    });
+  }
 
   var CFG = {
     chatUrl: "/api/chat",
@@ -95,19 +222,18 @@
     // build a Stripe Checkout for exactly that selection. Prices/amounts live in Stripe;
     // the labels below are display-only. `key` maps to a Stripe Price via env in checkout.js.
     plans: [
-      { key:"markus",  name:"Markus",        tag:"Performance & nutrition", price:"€9 / mo" },
-      { key:"sam",     name:"Sam Menton",    tag:"Mental game",             price:"€9 / mo" },
-      { key:"fitness", name:"Fitness Coach", tag:"Stretching & mobility",   price:"€9 / mo" }
+      { key:"markus",  name:"Markus",        tagKey:"tagMarkus",  price:"€9" },
+      { key:"sam",     name:"Sam Menton",    tagKey:"tagSam",     price:"€9" },
+      { key:"fitness", name:"Fitness Coach", tagKey:"tagFitness", price:"€9" }
     ],
-    bundle: { key:"bundle", name:"All three (bundle)", tag:"Markus + Sam + Fitness", price:"€19 / mo" },
+    bundle: { key:"bundle", nameKey:"bundleName", tag:"Markus + Sam + Fitness", price:"€19" },
     samAppUrl: "https://sammenton.netlify.app/"  // v1: Sam runs as its own app; hub launches it
   };
 
   var COACHES = {
-    sam:     { name:"Sam Menton", icon:"🧠", tag:"Mental game — matches, pressure, focus.", mode:"external", url:CFG.samAppUrl },
-    markus:  { name:"Markus",     icon:"🎾", tag:"Performance & nutrition — fuel, load, recovery.", mode:"chat", intake:true,
-               greeting:"Hey — I've got your profile. What's on for today: a training day, a match, or figuring out what to eat?" },
-    fitness: { name:"Fitness Coach", icon:"🤸", tag:"Stretching & mobility routines.", mode:"soon" }
+    sam:     { name:"Sam Menton", icon:"🧠", tagKey:"coachSam", mode:"external", url:CFG.samAppUrl },
+    markus:  { name:"Markus",     icon:"🎾", tagKey:"coachMarkus", mode:"chat", intake:true, greetKey:"greetMarkus" },
+    fitness: { name:"Fitness Coach", icon:"🤸", tagKey:"coachFitness", mode:"soon" }
   };
 
   var app = document.getElementById("app");
@@ -154,28 +280,29 @@
 
   // ---------- Onboarding + email capture → trial ----------
   function viewOnboard(){
+    rerender = viewOnboard;
     var wrap = el(
-      '<div class="center">'+
-        '<h1>Your coaches, in one place 🎾</h1>'+
-        '<p class="sub">Markus for performance & nutrition, Sam for the mental game, a fitness coach for mobility — grounded in your body data. Start your free '+CFG.trialDays+'-day trial.</p>'+
+      '<div class="center">'+ langSwitch() +
+        '<h1>'+esc(t("onbTitle"))+'</h1>'+
+        '<p class="sub">'+esc(t("onbSub",{n:CFG.trialDays}))+'</p>'+
         '<div class="card">'+
-          '<label for="em">Your email</label>'+
+          '<label for="em">'+esc(t("email"))+'</label>'+
           '<input id="em" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">'+
           '<div style="height:14px"></div>'+
-          '<button class="btn" id="go">Start free trial</button>'+
-          '<p class="sub" style="margin:12px 0 0;font-size:.78rem">No card required. We\'ll only email you about your coaching.</p>'+
+          '<button class="btn" id="go">'+esc(t("startTrial"))+'</button>'+
+          '<p class="sub" style="margin:12px 0 0;font-size:.78rem">'+esc(t("noCard"))+'</p>'+
         '</div>'+
         '<div class="card" style="margin-top:14px;border-color:rgba(250,178,25,.35)">'+
-          '<p class="sub" style="margin:0;font-size:.8rem"><strong>Important.</strong> '+esc(DISCLAIMER)+'</p>'+
+          '<p class="sub" style="margin:0;font-size:.8rem"><strong>'+esc(t("important"))+'</strong> '+esc(t("disclaimer"))+'</p>'+
         '</div>'+
-        '<p class="sub" style="margin-top:14px;font-size:.72rem">By starting, you agree this is not medical or therapeutic advice.</p>'+
+        '<p class="sub" style="margin-top:14px;font-size:.72rem">'+esc(t("agree"))+'</p>'+
       '</div>');
-    app.replaceChildren(wrap);
+    app.replaceChildren(wrap); bindLang(wrap);
     var input = wrap.querySelector("#em"), btn = wrap.querySelector("#go");
     function submit(){
       var email = (input.value||"").trim();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ input.focus(); input.style.borderColor="var(--accent)"; return; }
-      btn.disabled = true; btn.textContent = "Starting…";
+      btn.disabled = true; btn.textContent = t("starting");
       S.set("cf_email", email);
       S.set("cf_trialStart", Date.now());
       // fire-and-forget email capture
@@ -191,32 +318,33 @@
   // The buyer ticks the coaches they want (or the bundle); we ask the server to build a
   // Stripe Checkout for exactly that selection and redirect there.
   function viewPaywall(){
+    rerender = viewPaywall;
     var opts = "";
     CFG.plans.forEach(function(p){
       opts += '<label class="pick" data-key="'+p.key+'">'+
         '<input type="checkbox" data-key="'+p.key+'">'+
         '<span class="pk-main"><span class="pk-name">'+esc(p.name)+'</span>'+
-        '<span class="pk-tag">'+esc(p.tag)+'</span></span>'+
-        '<span class="pk-price">'+esc(p.price)+'</span></label>';
+        '<span class="pk-tag">'+esc(t(p.tagKey))+'</span></span>'+
+        '<span class="pk-price">'+esc(p.price+" "+t("perMonth"))+'</span></label>';
     });
     var b = CFG.bundle;
     var bundleOpt = '<label class="pick bundle" data-key="'+b.key+'">'+
       '<input type="checkbox" data-key="'+b.key+'">'+
-      '<span class="pk-main"><span class="pk-name">'+esc(b.name)+' <span class="badge on">Best value</span></span>'+
+      '<span class="pk-main"><span class="pk-name">'+esc(t(b.nameKey))+' <span class="badge on">'+esc(t("bestValue"))+'</span></span>'+
       '<span class="pk-tag">'+esc(b.tag)+'</span></span>'+
-      '<span class="pk-price">'+esc(b.price)+'</span></label>';
+      '<span class="pk-price">'+esc(b.price+" "+t("perMonth"))+'</span></label>';
 
     var wrap = el(
-      '<div class="center">'+
-        '<h1>Choose your coaching</h1>'+
-        '<p class="sub">Pick a single coach, mix a few, or take all three as a bundle. You can change later.</p>'+
+      '<div class="center">'+ langSwitch() +
+        '<h1>'+esc(t("chooseTitle"))+'</h1>'+
+        '<p class="sub">'+esc(t("chooseSub"))+'</p>'+
         '<div class="picks">'+ bundleOpt + opts +'</div>'+
-        '<button class="btn" id="buy" disabled>Continue to checkout</button>'+
+        '<button class="btn" id="buy" disabled>'+esc(t("toCheckout"))+'</button>'+
         '<p class="sub" id="buyerr" style="margin-top:10px;font-size:.8rem;color:var(--accent);display:none"></p>'+
-        '<p class="sub" style="margin-top:16px;font-size:.8rem">Already bought? Open the link from your purchase email — it unlocks this app.</p>'+
-        '<p class="sub" style="margin-top:10px;font-size:.72rem">'+esc(DISCLAIMER)+'</p>'+
+        '<p class="sub" style="margin-top:16px;font-size:.8rem">'+esc(t("alreadyBought"))+'</p>'+
+        '<p class="sub" style="margin-top:10px;font-size:.72rem">'+esc(t("disclaimer"))+'</p>'+
       '</div>');
-    app.replaceChildren(wrap);
+    app.replaceChildren(wrap); bindLang(wrap);
 
     var buy = wrap.querySelector("#buy");
     var errBox = wrap.querySelector("#buyerr");
@@ -240,7 +368,7 @@
     buy.addEventListener("click", function(){
       var items = selectedKeys();
       if(!items.length) return;
-      buy.disabled = true; buy.textContent = "Opening checkout…"; errBox.style.display="none";
+      buy.disabled = true; buy.textContent = t("openingCheckout"); errBox.style.display="none";
       fetch(CFG.checkoutUrl,{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({ items:items, period:"monthly", email:S.get("cf_email","") })})
         .then(function(r){ return r.json(); })
@@ -249,42 +377,43 @@
           throw new Error(d && d.error || "checkout_failed");
         })
         .catch(function(){
-          buy.disabled=false; buy.textContent="Continue to checkout";
-          errBox.textContent="Sorry — couldn't start checkout. Please try again."; errBox.style.display="block";
+          buy.disabled=false; buy.textContent=t("toCheckout");
+          errBox.textContent=t("checkoutErr"); errBox.style.display="block";
         });
     });
   }
 
   // ---------- Home / hub ----------
   function viewHome(){
-    var t = trialInfo();
-    var trialLine = hasToken() ? '<span class="badge on">Full access</span>'
-      : (t.active ? ("Free trial · "+t.daysLeft+" day"+(t.daysLeft===1?"":"s")+" left") : "");
+    rerender = viewHome;
+    var ti = trialInfo();
+    var trialLine = hasToken() ? '<span class="badge on">'+esc(t("fullAccess"))+'</span>'
+      : (ti.active ? esc(t(ti.daysLeft===1?"trialLeft":"trialLeftPl",{n:ti.daysLeft})) : "");
     var tiles = "";
     ["markus","sam","fitness"].forEach(function(k){
       var c = COACHES[k];
-      var badge = c.mode==="soon" ? '<span class="badge soon">Soon</span>' : '';
+      var badge = c.mode==="soon" ? '<span class="badge soon">'+esc(t("soon"))+'</span>' : '';
       tiles += '<button class="tile'+(c.mode==="soon"?" soon":"")+'" data-coach="'+k+'">'+
         '<span class="ic">'+c.icon+'</span>'+
         '<span class="nm">'+esc(c.name)+'</span>'+
-        '<span class="tg">'+esc(c.tag)+'</span>'+ badge +'</button>';
+        '<span class="tg">'+esc(t(c.tagKey))+'</span>'+ badge +'</button>';
     });
     var wrap = el(
-      '<div>'+
-        '<h1>Your coaches</h1>'+
-        '<p class="sub">Pick who you want to talk to.</p>'+
+      '<div>'+ langSwitch() +
+        '<h1>'+esc(t("homeTitle"))+'</h1>'+
+        '<p class="sub">'+esc(t("homeSub"))+'</p>'+
         '<div class="tiles">'+ tiles +
           '<button class="tile wide" data-coach="whoop">'+
             '<span class="ic">⌚</span>'+
             '<span style="display:flex;flex-direction:column;gap:2px">'+
-              '<span class="nm">Connect your Whoop</span>'+
-              '<span class="tg">Ground your briefing in real recovery, sleep & strain.</span>'+
+              '<span class="nm">'+esc(t("whoopTile"))+'</span>'+
+              '<span class="tg">'+esc(t("whoopTileSub"))+'</span>'+
             '</span></button>'+
         '</div>'+
         '<div class="trialbar">'+ trialLine +'</div>'+
-        '<p class="sub" style="margin-top:16px;font-size:.72rem;text-align:center">'+esc(DISCLAIMER)+'</p>'+
+        '<p class="sub" style="margin-top:16px;font-size:.72rem;text-align:center">'+esc(t("disclaimer"))+'</p>'+
       '</div>');
-    app.replaceChildren(wrap);
+    app.replaceChildren(wrap); bindLang(wrap);
     wrap.querySelectorAll("[data-coach]").forEach(function(b){
       b.addEventListener("click", function(){ openCoach(b.getAttribute("data-coach")); });
     });
@@ -301,45 +430,48 @@
   }
 
   function viewSoon(c){
+    rerender = function(){ viewSoon(c); };
     var wrap = el(
       '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+c.icon+' '+esc(c.name)+'</h2></div>'+
-      '<div class="card"><p class="sub" style="margin:0">'+esc(c.name)+' is coming soon. It will bring a full library of stretching and mobility routines.</p></div></div>');
+      '<div class="card"><p class="sub" style="margin:0">'+esc(t("soonText",{name:c.name}))+'</p></div></div>');
     app.replaceChildren(wrap);
     wrap.querySelector("#bk").addEventListener("click", viewHome);
   }
 
   function viewWhoop(){
+    rerender = viewWhoop;
     var wrap = el(
-      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">⌚ Connect Whoop</h2></div>'+
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">⌚ '+esc(t("whoopTitle"))+'</h2></div>'+
       '<div class="card">'+
-        '<p class="sub">Connecting your Whoop lets your morning briefing use your real recovery, sleep and strain — the difference between generic advice and advice for <em>your</em> body today.</p>'+
-        '<p class="sub" style="margin-bottom:0">Setup is done together so it\'s connected correctly to your account. Request access and we\'ll get you set up.</p>'+
+        '<p class="sub">'+t("whoopP1")+'</p>'+
+        '<p class="sub" style="margin-bottom:0">'+esc(t("whoopP2"))+'</p>'+
         '<div style="height:14px"></div>'+
-        '<button class="btn" id="req">Request Whoop setup</button>'+
+        '<button class="btn" id="req">'+esc(t("whoopBtn"))+'</button>'+
       '</div></div>');
     app.replaceChildren(wrap);
     wrap.querySelector("#bk").addEventListener("click", viewHome);
     wrap.querySelector("#req").addEventListener("click", function(){
       try{ fetch(CFG.subscribeUrl,{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({email:S.get("cf_email",""), request:"whoop", ts:new Date().toISOString()})}); }catch(e){}
-      wrap.querySelector("#req").textContent = "Request sent ✓";
+      wrap.querySelector("#req").textContent = t("whoopSent");
       wrap.querySelector("#req").disabled = true;
     });
   }
 
   // ---------- Markus intake ----------
   function viewIntake(k){
+    rerender = function(){ viewIntake(k); };
     var wrap = el(
-      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">A few things about you</h2></div>'+
-      '<p class="steps">Markus uses this to tailor fuel and training to you. Stays private.</p>'+
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+esc(t("intakeTitle"))+'</h2></div>'+
+      '<p class="steps">'+esc(t("intakeSub"))+'</p>'+
       '<div class="card">'+
-        '<label>Age</label><input id="age" type="number" inputmode="numeric" placeholder="e.g. 21">'+
-        '<label>Height (cm)</label><input id="height" type="number" inputmode="numeric" placeholder="e.g. 183">'+
-        '<label>Weight (kg)</label><input id="weight" type="number" inputmode="numeric" placeholder="e.g. 76">'+
-        '<label>Where do you live?</label><input id="location" type="text" placeholder="e.g. Irvine, California">'+
-        '<label>Food intolerances / allergies</label><input id="intol" type="text" placeholder="e.g. lactose, none">'+
+        '<label>'+esc(t("age"))+'</label><input id="age" type="number" inputmode="numeric" placeholder="'+esc(t("phAge"))+'">'+
+        '<label>'+esc(t("height"))+'</label><input id="height" type="number" inputmode="numeric" placeholder="'+esc(t("phHeight"))+'">'+
+        '<label>'+esc(t("weight"))+'</label><input id="weight" type="number" inputmode="numeric" placeholder="'+esc(t("phWeight"))+'">'+
+        '<label>'+esc(t("where"))+'</label><input id="location" type="text" placeholder="'+esc(t("phWhere"))+'">'+
+        '<label>'+esc(t("intol"))+'</label><input id="intol" type="text" placeholder="'+esc(t("phIntol"))+'">'+
         '<div style="height:16px"></div>'+
-        '<button class="btn" id="save">Save & start</button>'+
+        '<button class="btn" id="save">'+esc(t("saveStart"))+'</button>'+
       '</div></div>');
     app.replaceChildren(wrap);
     wrap.querySelector("#bk").addEventListener("click", viewHome);
@@ -358,16 +490,17 @@
 
   // ---------- Chat ----------
   function viewChat(k){
+    rerender = function(){ viewChat(k); };
     var c = COACHES[k];
     var histKey = "cf_chat_"+k;
     var history = S.get(histKey, []);
     var wrap = el(
       '<div>'+
         '<div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+c.icon+' '+esc(c.name)+'</h2></div>'+
-        '<p class="sub" style="font-size:.7rem;margin:-4px 0 8px">Not medical or therapeutic advice. For diagnosis or a crisis, see a professional.</p>'+
+        '<p class="sub" style="font-size:.7rem;margin:-4px 0 8px">'+esc(t("chatNote"))+'</p>'+
         '<div class="log" id="log"></div>'+
-        '<div class="inrow"><textarea id="in" rows="1" placeholder="Message '+esc(c.name)+' …"></textarea>'+
-        '<button class="btn" id="send" aria-label="Send">➤</button></div>'+
+        '<div class="inrow"><textarea id="in" rows="1" placeholder="'+esc(t("message",{name:c.name}))+'"></textarea>'+
+        '<button class="btn" id="send" aria-label="'+esc(t("send"))+'">➤</button></div>'+
       '</div>');
     app.replaceChildren(wrap);
     var log = wrap.querySelector("#log"), input = wrap.querySelector("#in"), sendBtn = wrap.querySelector("#send");
@@ -375,7 +508,7 @@
 
     function render(){
       log.replaceChildren();
-      if(!history.length){ log.appendChild(el('<div class="msg bot">'+esc(c.greeting||"Hey! What do you need today?")+'</div>')); }
+      if(!history.length){ log.appendChild(el('<div class="msg bot">'+esc(t(c.greetKey||"greetDefault"))+'</div>')); }
       history.forEach(function(m){
         log.appendChild(el('<div class="msg '+(m.role==="user"?"user":"bot")+'">'+esc(m.content).replace(/\n/g,"<br>")+'</div>'));
       });
@@ -390,7 +523,7 @@
       history.push({role:"user", content:text});
       S.set(histKey, history.slice(-40));
       render();
-      var typing = el('<div class="msg bot typing">'+esc(c.name)+' is typing …</div>');
+      var typing = el('<div class="msg bot typing">'+esc(t("typing",{name:c.name}))+'</div>');
       log.appendChild(typing); window.scrollTo(0,document.body.scrollHeight);
       sendBtn.disabled = true;
       fetch(CFG.chatUrl,{method:"POST",headers:{"Content-Type":"application/json"},
@@ -399,6 +532,7 @@
           token:S.get("cf_token",""),
           email:S.get("cf_email",""),
           profile:S.get("cf_profile",null),
+          lang:LANG,
           messages:history.filter(function(m){return !m.error;}).slice(-12).map(function(m){return {role:m.role,content:m.content};})
         })
       }).then(function(r){
@@ -409,7 +543,7 @@
         if(!d.text) throw new Error("empty");
         history.push({role:"assistant", content:d.text});
       }).catch(function(){
-        history.push({role:"assistant", content:"Can't reach "+c.name+" right now — try again in a bit.", error:true});
+        history.push({role:"assistant", content:t("cantReach",{name:c.name}), error:true});
       }).then(function(){
         S.set(histKey, history.slice(-40)); sendBtn.disabled=false; render();
       });
