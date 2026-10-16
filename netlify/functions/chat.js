@@ -2,8 +2,8 @@
 // Same hardening as the Sam Menton app: origin check, per-IP rate limit,
 // purchase-token access gate, prompt caching. User messages are NEVER logged.
 //
-// Multi-coach ready: the COACHES map holds one system prompt per coach.
-// v1 ships with "markus". Add "fitness" (and its knowledge base) later.
+// Three coaches: Markus (performance & nutrition), Sam (mental game), Alex (stretching &
+// mobility, with his knowledge base). The COACHES map holds their system prompts.
 //
 // Environment variables (Netlify → Site settings → Environment):
 //   ANTHROPIC_API_KEY  (required)  your Claude API key
@@ -19,7 +19,7 @@
 // Derived from Airtable "Personalübersicht → Team → Markus → Stellenbeschreibung"
 // (the source of truth Bianca maintains). Keep this in sync if the role changes there.
 const MARKUS_PROMPT = `# IDENTITY
-You are Markus, Lenard's data-driven performance coach. You combine nutrition,
+You are Markus, the player's data-driven performance coach. You combine nutrition,
 training, recovery and mental steadiness into one holistic support, and you steer his
 daily load, recovery and energy proactively. You are empathetic, attentive, and
 athletically demanding — a teammate in his pocket, never a lecturer.
@@ -48,8 +48,8 @@ player is intolerant to.
 - Always act protectively and responsibly, with a conscious eye on overload risk.
   Never encourage overtraining, playing through injury, or extreme dieting. Recovery
   is part of performance.
-- Respect the player's food intolerances without exception.
-- Grocery note: do NOT use Whole Foods; Trader Joe's is fine.
+- Food restrictions: respect only intolerances or allergies that are stated in the profile or by
+  the player, without exception. Never assume or mention restrictions that were not stated.
 - You are an AI coaching tool; if asked, be honest. Don't fake a personal bond or claim
   to remember past days beyond this conversation.
 
@@ -65,9 +65,15 @@ player is intolerant to.
 Warm and concrete, e.g. "Hey — I've got your profile. What's on today: training, a
 match, or figuring out what to eat?" Adapt to the player.`;
 
+// Sam and Alex: prompts from Airtable Steuerzentrale › Prompts (see netlify/lib/coach-prompts.js).
+const { SAM_PROMPT, ALEX_PROMPT, ALEX_KNOWLEDGE } = require('../lib/coach-prompts.js');
+
+// blocks = stable system text (cached); maxTokens = room for the coach's typical answer
+// (Alex writes whole sessions and plans, so he gets more).
 const COACHES = {
-  markus: { prompt: MARKUS_PROMPT, needsProfile: true },
-  // fitness: { prompt: FITNESS_PROMPT, needsProfile: false },  // later, + knowledge base (RAG)
+  markus: { blocks: [MARKUS_PROMPT], needsProfile: true, maxTokens: 700 },
+  sam:    { blocks: [SAM_PROMPT], maxTokens: 500 },
+  alex:   { blocks: [ALEX_PROMPT, ALEX_KNOWLEDGE], maxTokens: 1200 },
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -151,9 +157,8 @@ exports.handler = async function (event) {
     }
 
     // Stable coach prompt first (cached); volatile per-player profile after the breakpoint.
-    const system = [
-      { type: 'text', text: conf.prompt, cache_control: { type: 'ephemeral' } },
-    ];
+    const system = conf.blocks.map(text => ({ type: 'text', text }));
+    system[system.length - 1].cache_control = { type: 'ephemeral' };
     const pb = profileBlock(profile);
     if (pb) system.push({ type: 'text', text: pb });
     // Language picked in the app (EN/DE/FR). Sits after the cache breakpoint, so the
@@ -172,7 +177,7 @@ exports.handler = async function (event) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
+        max_tokens: conf.maxTokens || 500,
         system,
         messages,
       }),

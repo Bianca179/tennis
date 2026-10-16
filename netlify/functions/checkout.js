@@ -4,24 +4,22 @@
 // The app then redirects the buyer to Stripe. Prices are NEVER trusted from the client —
 // only price *keys* are sent; the amounts live in Stripe.
 //
-// Environment variables (Netlify → Site settings → Environment):
-//   STRIPE_SECRET_KEY        sk_live_… (or sk_test_… while testing)
-//   PRICE_MARKUS_MONTHLY     price_…   (recurring price for Markus)
-//   PRICE_SAM_MONTHLY        price_…
-//   PRICE_FITNESS_MONTHLY    price_…
-//   PRICE_BUNDLE_MONTHLY     price_…   (all coaches)
+// Environment variables (Netlify → Site configuration → Environment variables):
+//   STRIPE_SECRET_KEY   sk_live_… or a restricted key (rk_live_…) with Checkout Sessions: write
+//
+// Prices (Stripe account "AIVa", created 2026-10-16; public IDs, not secret):
+//   1 coach          €12.90 / month  → PRICE_SINGLE
+//   all three coaches €25.80 / month → PRICE_BUNDLE  ("3 for the price of 2")
+// Two or more coaches selected = the bundle (it costs the same as two).
 //
 // NOTE ON UNLOCKING ACCESS (production step): after payment Stripe redirects to
 // success_url. For a real entitlement, add a Stripe webhook (checkout.session.completed)
 // that issues a per-buyer token and emails them a link with ?key=TOKEN. Until that's
 // wired, success_url returns ?paid=1 and the app grants local access (MVP).
 
-const PRICES = {
-  markus_monthly:  () => process.env.PRICE_MARKUS_MONTHLY,
-  sam_monthly:     () => process.env.PRICE_SAM_MONTHLY,
-  fitness_monthly: () => process.env.PRICE_FITNESS_MONTHLY,
-  bundle_monthly:  () => process.env.PRICE_BUNDLE_MONTHLY,
-};
+const PRICE_SINGLE = process.env.PRICE_SINGLE || 'price_1URGhNGEviYfSgztQmQPwnAk';
+const PRICE_BUNDLE = process.env.PRICE_BUNDLE || 'price_1URGjbGEviYfSgztFwNzsQfM';
+const COACH_KEYS = ['markus', 'sam', 'alex'];
 
 function form(obj) {
   // Stripe wants application/x-www-form-urlencoded with bracket notation.
@@ -39,18 +37,14 @@ exports.handler = async function (event) {
 
     const body = JSON.parse(event.body || '{}');
     const items = Array.isArray(body.items) ? body.items : [];
-    const period = body.period === 'monthly' ? 'monthly' : 'monthly'; // only monthly for now
     const email = (typeof body.email === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email)) ? body.email : null;
 
-    // Resolve selected keys → Stripe price ids
-    const priceIds = [];
-    for (const it of items) {
-      const key = String(it) + '_' + period;
-      const resolver = PRICES[key];
-      const pid = resolver && resolver();
-      if (pid) priceIds.push(pid);
-    }
-    if (!priceIds.length) return { statusCode: 400, body: JSON.stringify({ error: 'no_valid_items' }) };
+    // Resolve the selection → exactly one Stripe price (never trust amounts from the client)
+    const coaches = items.map(String).filter(k => COACH_KEYS.includes(k));
+    const bundle = items.map(String).includes('bundle') || coaches.length >= 2;
+    if (!bundle && coaches.length !== 1) return { statusCode: 400, body: JSON.stringify({ error: 'no_valid_items' }) };
+    const priceId = bundle ? PRICE_BUNDLE : PRICE_SINGLE;
+    const plan = bundle ? 'bundle' : coaches[0];
 
     const origin = event.headers.origin || event.headers.Origin ||
       ('https://' + (event.headers.host || 'localhost'));
@@ -63,10 +57,11 @@ exports.handler = async function (event) {
     };
     if (email) params['customer_email'] = email;
     const parts = form(params);
-    priceIds.forEach((pid, i) => {
-      parts.push('line_items[' + i + '][price]=' + encodeURIComponent(pid));
-      parts.push('line_items[' + i + '][quantity]=1');
-    });
+    parts.push('line_items[0][price]=' + encodeURIComponent(priceId));
+    parts.push('line_items[0][quantity]=1');
+    // Which coach a single-coach buyer chose (for support and, later, server-side access)
+    parts.push('subscription_data[metadata][plan]=' + encodeURIComponent(plan));
+    parts.push('metadata[plan]=' + encodeURIComponent(plan));
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
       method: 'POST',

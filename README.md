@@ -8,8 +8,8 @@ Markus intake — built on the same lightweight pattern as the Sam Menton app
 
 1. **Onboarding** — welcome + email capture → starts a free trial (`trialDays`, default 7).
    The email is POSTed to `/api/subscribe`.
-2. **Home** — tiles: **Markus** (performance & nutrition), **Sam** (mental), **Fitness Coach**
-   (soon), and a wide **Connect Whoop** tile.
+2. **Home** — tiles: **Markus** (performance & nutrition), **Sam** (mental), **Alex** (stretching &
+   mobility, with his knowledge base), and a wide **Connect Whoop** tile. All three chat in the app.
 3. **Markus intake** — first time entering Markus: age, height, weight, location, food
    intolerances → stored locally, sent as private context on every message.
 4. **Chat** — talks to `/api/chat` with `{ coach, profile, token, email, messages }`.
@@ -49,9 +49,9 @@ manifest.json                  → PWA (add to home screen)
      - `SUBSCRIBE_WEBHOOK` (optional) — fallback only, used if `AIRTABLE_TOKEN` is unset.
        If neither is set, leads appear in the Netlify function log only.
    - **Stripe checkout:**
-     - `STRIPE_SECRET_KEY` — `sk_live_…` (or `sk_test_…` while testing).
-     - `PRICE_MARKUS_MONTHLY`, `PRICE_SAM_MONTHLY`, `PRICE_FITNESS_MONTHLY`,
-       `PRICE_BUNDLE_MONTHLY` — the recurring Stripe **Price** IDs for each option.
+     - `STRIPE_SECRET_KEY` — best a restricted key (`rk_live_…`) with *Checkout Sessions: write* only.
+     - Prices live in Stripe account "AIVa" and are set in `checkout.js` (public IDs):
+       1 coach €12.90/month, all three €25.80/month ("3 for the price of 2"). Two coaches = bundle.
 4. In `index.html` → `CFG.plans` / `CFG.bundle`, set the display names and price labels to taste
    (amounts themselves live in Stripe; the labels are display-only).
 5. Deploy.
