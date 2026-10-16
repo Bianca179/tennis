@@ -51,7 +51,7 @@ manifest.json                  → PWA (add to home screen)
    - **Stripe checkout:**
      - `STRIPE_SECRET_KEY` — best a restricted key (`rk_live_…`) with *Checkout Sessions: write* only.
      - Prices live in Stripe account "AIVa" and are set in `checkout.js` (public IDs):
-       1 coach €12.90/month, all three €25.80/month ("3 for the price of 2"). Two coaches = bundle.
+       1 coach €12.90 / $13.90 per month, all three €25.80 / $27.80 ("3 for the price of 2"). Two coaches = bundle.
 4. In `index.html` → `CFG.plans` / `CFG.bundle`, set the display names and price labels to taste
    (amounts themselves live in Stripe; the labels are display-only).
 5. Deploy.

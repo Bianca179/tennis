@@ -8,8 +8,8 @@
 //   STRIPE_SECRET_KEY   sk_live_… or a restricted key (rk_live_…) with Checkout Sessions: write
 //
 // Prices (Stripe account "AIVa", created 2026-10-16; public IDs, not secret):
-//   1 coach          €12.90 / month  → PRICE_SINGLE
-//   all three coaches €25.80 / month → PRICE_BUNDLE  ("3 for the price of 2")
+//   1 coach          €12.90 / $13.90 per month  → PRICE_SINGLE (USD via currency_options)
+//   all three coaches €25.80 / $27.80 per month → PRICE_BUNDLE  ("3 for the price of 2")
 // Two or more coaches selected = the bundle (it costs the same as two).
 //
 // NOTE ON UNLOCKING ACCESS (production step): after payment Stripe redirects to
@@ -56,6 +56,8 @@ exports.handler = async function (event) {
       'allow_promotion_codes': 'true',
     };
     if (email) params['customer_email'] = email;
+    // Same currency the app showed (both are defined on the Stripe prices).
+    if (body.currency === 'usd' || body.currency === 'eur') params['currency'] = body.currency;
     const parts = form(params);
     parts.push('line_items[0][price]=' + encodeURIComponent(priceId));
     parts.push('line_items[0][quantity]=1');

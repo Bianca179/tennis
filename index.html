@@ -238,6 +238,14 @@
     });
   }
 
+  // Display currency: US dollars for visitors in the Americas or via a US partner link,
+  // euros otherwise. Stripe holds both amounts on the same prices; checkout gets the same currency.
+  var CUR = (function(){
+    try{ var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; if(/^America\//.test(tz)) return "usd"; }catch(e){}
+    return "eur";
+  })();
+  var PRICE = CUR==="usd" ? { single:"$13.90", bundle:"$27.80" } : { single:"€12.90", bundle:"€25.80" };
+
   var CFG = {
     chatUrl: "/api/chat",
     subscribeUrl: "/api/subscribe",
@@ -247,11 +255,11 @@
     // build a Stripe Checkout for exactly that selection. Prices/amounts live in Stripe;
     // the labels below are display-only. `key` maps to a Stripe Price via env in checkout.js.
     plans: [
-      { key:"markus",  name:"Markus",        tagKey:"tagMarkus",  price:"€12.90" },
-      { key:"sam",     name:"Sam Menton",    tagKey:"tagSam",     price:"€12.90" },
-      { key:"alex",    name:"Alex",          tagKey:"tagAlex",    price:"€12.90" }
+      { key:"markus",  name:"Markus",        tagKey:"tagMarkus",  price:PRICE.single },
+      { key:"sam",     name:"Sam Menton",    tagKey:"tagSam",     price:PRICE.single },
+      { key:"alex",    name:"Alex",          tagKey:"tagAlex",    price:PRICE.single }
     ],
-    bundle: { key:"bundle", nameKey:"bundleName", tag:"Markus + Sam + Alex", price:"€25.80" }
+    bundle: { key:"bundle", nameKey:"bundleName", tag:"Markus + Sam + Alex", price:PRICE.bundle }
   };
 
   var COACHES = {
@@ -422,7 +430,7 @@
       if(!items.length || !startNow.checked) return;
       buy.disabled = true; buy.textContent = t("openingCheckout"); errBox.style.display="none";
       fetch(CFG.checkoutUrl,{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ items:items, period:"monthly", email:S.get("cf_email",""), ref:S.get("cf_ref",""), lang:LANG })})
+        body:JSON.stringify({ items:items, period:"monthly", email:S.get("cf_email",""), ref:S.get("cf_ref",""), lang:LANG, currency:CUR })})
         .then(function(r){ return r.json(); })
         .then(function(d){
           if(d && d.url){ location.href = d.url; return; }
