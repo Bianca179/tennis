@@ -52,6 +52,18 @@
   .msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
   .msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
   .msg.typing{color:var(--ink-2)}
+  .msg-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{background:var(--surface-2);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:.8rem;font-family:inherit;cursor:pointer}
+  .inrow .btn.mic{padding:14px 14px;background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+  .inrow .btn.mic.rec{background:#d93a3a;border-color:transparent;color:#fff;animation:micpulse 1.2s ease-in-out infinite}
+  @keyframes micpulse{50%{opacity:.6}}
+  .guide{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0) + 18px) 20px calc(env(safe-area-inset-bottom,0) + 20px);max-width:520px;margin:0 auto}
+  .guide-top{display:flex;justify-content:space-between;align-items:center;color:var(--ink-2);font-size:.9rem}
+  .g-x{background:none;border:none;color:var(--ink-2);font-size:1.3rem;cursor:pointer}
+  .g-step{flex:1;display:flex;align-items:center;font-size:1.6rem;line-height:1.35;font-weight:600}
+  .g-timer{font-size:3.2rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;min-height:4rem}
+  .g-nav{display:flex;gap:10px;margin-top:16px}
+  .g-nav .btn{flex:1;padding:18px 8px}
   .inrow{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;
     display:flex;gap:8px;padding:10px 18px calc(env(safe-area-inset-bottom,0) + 12px);
     background:linear-gradient(transparent,var(--bg) 22%)}
@@ -127,6 +139,7 @@
       termsNote: "Monthly subscription, renews automatically until you cancel. Our <a href=\"/en/terms.html\" target=\"_blank\">terms</a>, <a href=\"/en/terms.html#withdrawal\" target=\"_blank\">right of withdrawal</a> and <a href=\"/en/privacy.html\" target=\"_blank\">privacy policy</a> apply. Cancel anytime: <a href=\"/en/cancel.html\" target=\"_blank\">cancel here</a>.",
       healthConsent: "I consent to these details (incl. intolerances = health data) being sent to the AI provider Anthropic (USA) so Markus can answer. I can withdraw this anytime. <a href=\"/en/privacy.html\" target=\"_blank\">Privacy</a>",
       chatNote: "Not medical or therapeutic advice. For diagnosis or a crisis, see a professional.",
+      speakTo: "Speak to {name}", stopSend: "Stop and send", listening: "Listening … tap ⏹ to send", micErr: "Couldn't hear you — try again or type.", micDenied: "Please allow the microphone for this site.", listen: "🔊 Listen", startGuide: "▶ Guided session", stepOf: "Step {i} of {n}", gBack: "‹ Back", gNext: "Next ›", gDone: "Done ✓", gPause: "Pause", gResume: "Resume", gClose: "Close", gFinished: "Done. Nice work! 🎾", gSaid: "Nice work. Session done.", gThree: "Three",
       message: "Message {name} …", typing: "{name} is typing …", cantReach: "Can't reach {name} right now — try again in a bit.",
       send: "Send", language: "Language"
     },
@@ -165,6 +178,7 @@
       termsNote: "Monatsabo, verlängert sich automatisch bis zur Kündigung. Es gelten unsere <a href=\"/agb.html\" target=\"_blank\">AGB</a>, die <a href=\"/agb.html#widerruf\" target=\"_blank\">Widerrufsbelehrung</a> und der <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>. Jederzeit kündbar: <a href=\"/kuendigen.html\" target=\"_blank\">hier kündigen</a>.",
       healthConsent: "Ich willige ein, dass diese Angaben (inkl. Unverträglichkeiten = Gesundheitsdaten) an den KI-Anbieter Anthropic (USA) übermittelt werden, damit Markus antworten kann. Widerruf jederzeit möglich. <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>",
       chatNote: "Keine medizinische oder therapeutische Beratung. Für Diagnosen oder in einer Krise: bitte Fachleute fragen.",
+      speakTo: "Mit {name} sprechen", stopSend: "Stopp und senden", listening: "Ich höre zu … ⏹ zum Senden", micErr: "Nicht verstanden – versuch es noch einmal oder tippe.", micDenied: "Bitte erlaube das Mikrofon für diese Seite.", listen: "🔊 Vorlesen", startGuide: "▶ Geführt üben", stepOf: "Schritt {i} von {n}", gBack: "‹ Zurück", gNext: "Weiter ›", gDone: "Fertig ✓", gPause: "Pause", gResume: "Weiter", gClose: "Schließen", gFinished: "Geschafft. Stark! 🎾", gSaid: "Stark. Einheit geschafft.", gThree: "Drei",
       message: "Nachricht an {name} …", typing: "{name} schreibt …", cantReach: "{name} ist gerade nicht erreichbar – versuch es gleich noch einmal.",
       send: "Senden", language: "Sprache"
     },
@@ -203,6 +217,7 @@
       termsNote: "Abonnement mensuel, renouvelé automatiquement jusqu'à résiliation. Nos <a href=\"/en/terms.html\" target=\"_blank\">conditions</a> (en anglais), le <a href=\"/en/terms.html#withdrawal\" target=\"_blank\">droit de rétractation</a> et la <a href=\"/en/privacy.html\" target=\"_blank\">confidentialité</a> s'appliquent. Résiliable à tout moment : <a href=\"/en/cancel.html\" target=\"_blank\">résilier ici</a>.",
       healthConsent: "J'accepte que ces données (y compris intolérances = données de santé) soient transmises au fournisseur d'IA Anthropic (USA) pour que Markus puisse répondre. Révocable à tout moment. <a href=\"/en/privacy.html\" target=\"_blank\">Confidentialité</a>",
       chatNote: "Pas un avis médical ou thérapeutique. Pour un diagnostic ou une crise, consulte un professionnel.",
+      speakTo: "Parler à {name}", stopSend: "Arrêter et envoyer", listening: "J'écoute … ⏹ pour envoyer", micErr: "Je n'ai pas compris — réessaie ou écris.", micDenied: "Autorise le micro pour ce site.", listen: "🔊 Écouter", startGuide: "▶ Séance guidée", stepOf: "Étape {i} sur {n}", gBack: "‹ Retour", gNext: "Suivant ›", gDone: "Terminé ✓", gPause: "Pause", gResume: "Reprendre", gClose: "Fermer", gFinished: "Terminé. Bravo ! 🎾", gSaid: "Bravo. Séance terminée.", gThree: "Trois",
       message: "Message à {name} …", typing: "{name} écrit …", cantReach: "{name} n'est pas joignable pour le moment — réessaie dans un instant.",
       send: "Envoyer", language: "Langue"
     }
@@ -248,6 +263,7 @@
 
   var CFG = {
     chatUrl: "/api/chat",
+    transcribeUrl: "/api/transcribe",
     subscribeUrl: "/api/subscribe",
     checkoutUrl: "/api/checkout",
     trialDays: 7,
@@ -552,6 +568,150 @@
     });
   }
 
+  // ---------- Voice: speak to the coach, hear the answer, guided sessions ----------
+  // Speech-to-text runs on the server (OpenAI) when it is configured; otherwise the browser's own
+  // recognizer is used where it exists. Read-aloud uses the phone's built-in voice (free).
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var VOICE_LANG = { en:"en-US", de:"de-DE", fr:"fr-FR" };
+  var voice = {
+    serverOn:false, unlocked:false,
+    hasRecorder:function(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); },
+    canListen:function(){ return voice.hasRecorder() || !!SR; },
+    // iOS only allows read-aloud after it was started once by a tap.
+    unlock:function(){
+      if(!("speechSynthesis" in window) || voice.unlocked) return;
+      try{ speechSynthesis.speak(new SpeechSynthesisUtterance(" ")); voice.unlocked = true; }catch(e){}
+    },
+    clean:function(text){
+      return String(text||"").replace(/\*\*|__|`|#+\s/g,"")
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,"").replace(/\s+/g," ").trim();
+    },
+    speak:function(text, onEnd){
+      if(!("speechSynthesis" in window)){ if(onEnd) onEnd(); return; }
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(voice.clean(text)), lang = VOICE_LANG[LANG] || "en-US";
+      u.lang = lang;
+      var v = speechSynthesis.getVoices().filter(function(x){ return x.lang && x.lang.replace("_","-").indexOf(lang)===0; })[0];
+      if(v) u.voice = v;
+      if(onEnd){ u.onend = onEnd; u.onerror = onEnd; }
+      speechSynthesis.speak(u);
+    },
+    stop:function(){ if("speechSynthesis" in window) speechSynthesis.cancel(); },
+    record:function(){
+      return navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+        var mime = ["audio/mp4","audio/webm;codecs=opus","audio/webm"].filter(function(x){
+          return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(x); })[0] || "";
+        var rec = new MediaRecorder(stream, mime ? { mimeType:mime } : undefined), chunks = [];
+        rec.ondataavailable = function(e){ if(e.data && e.data.size) chunks.push(e.data); };
+        var done = new Promise(function(resolve){
+          rec.onstop = function(){
+            stream.getTracks().forEach(function(tr){ tr.stop(); });
+            resolve(new Blob(chunks, { type: rec.mimeType || mime || "audio/mp4" }));
+          };
+        });
+        rec.start();
+        var timer = setTimeout(function(){ if(rec.state==="recording") rec.stop(); }, 60000);
+        return { stop:function(){ clearTimeout(timer); if(rec.state==="recording") rec.stop(); return done; } };
+      });
+    },
+    transcribe:function(blob){
+      return new Promise(function(resolve, reject){
+        var r = new FileReader();
+        r.onload = function(){ resolve(String(r.result).split(",")[1] || ""); };
+        r.onerror = reject; r.readAsDataURL(blob);
+      }).then(function(b64){
+        return fetch(CFG.transcribeUrl,{ method:"POST", headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({ audio:b64, mime:blob.type, lang:LANG }) });
+      }).then(function(res){
+        if(!res.ok) throw new Error("http");
+        return res.json();
+      }).then(function(d){ return String(d.text||"").trim(); });
+    }
+  };
+  try{ fetch(CFG.transcribeUrl).then(function(r){ return r.json(); })
+    .then(function(d){ voice.serverOn = !!(d && d.enabled); }).catch(function(){}); }catch(e){}
+
+  // Splits a coach answer into exercise steps (numbered lines, else bullets) with durations
+  // like "30 sec", "45 seconds each side" or "2 min".
+  function parseSteps(text){
+    var lines = String(text||"").split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    var numbered = lines.some(function(l){ return /^\d+[.)]\s+/.test(l); });
+    var re = numbered ? /^(\d+[.)])\s+(.*)$/ : /^([-•*–])\s+(.*)$/;
+    var steps = [];
+    lines.forEach(function(l){
+      var m = l.match(re); if(!m) return;
+      var body = m[2].replace(/\*\*|__/g,"").trim(); if(!body) return;
+      var secs = 0, tm = body.match(/(\d+(?:[.,]\d+)?)\s*(?:-|–|to)?\s*(?:\d+\s*)?(s|sec|secs|second|seconds|sek|sekunden|min|mins|minute|minutes|minuten)\b/i);
+      if(tm){
+        var n = parseFloat(tm[1].replace(",","."));
+        secs = /^m/i.test(tm[2]) ? Math.round(n*60) : Math.round(n);
+        if(/each side|per side|each leg|per leg|each arm|per arm|pro seite|je seite|chaque côté/i.test(body)) secs *= 2;
+        if(secs > 1800) secs = 0;
+      }
+      steps.push({ text:body, secs:secs });
+    });
+    return steps;
+  }
+
+  // Guided mode: one step per screen, read aloud, with a timer. Timed steps advance by themselves.
+  function openGuide(steps, coachName){
+    var i = 0, left = 0, tick = null, paused = false, wake = null;
+    var ov = el('<div class="guide" role="dialog" aria-modal="true">'+
+      '<div class="guide-top"><span class="g-count"></span><button class="g-x" aria-label="'+esc(t("gClose"))+'">✕</button></div>'+
+      '<div class="g-step"></div><div class="g-timer" aria-live="polite"></div>'+
+      '<div class="g-nav"><button class="btn ghost g-prev">'+esc(t("gBack"))+'</button>'+
+      '<button class="btn ghost g-pause">'+esc(t("gPause"))+'</button>'+
+      '<button class="btn g-next">'+esc(t("gNext"))+'</button></div></div>');
+    document.body.appendChild(ov);
+    function q(sel){ return ov.querySelector(sel); }
+    if(navigator.wakeLock && navigator.wakeLock.request){ navigator.wakeLock.request("screen").then(function(w){ wake = w; }).catch(function(){}); }
+    function fmt(x){ return Math.floor(x/60)+":"+String(x%60).padStart(2,"0"); }
+    function clear(){ if(tick){ clearInterval(tick); tick = null; } }
+    function close(){ clear(); voice.stop(); if(wake){ try{ wake.release(); }catch(e){} } ov.remove(); }
+    function startTimer(){
+      clear();
+      tick = setInterval(function(){
+        if(paused) return;
+        left -= 1; q(".g-timer").textContent = fmt(Math.max(left,0));
+        if(left===3) voice.speak(t("gThree"));
+        if(left<=0){ clear(); next(); }
+      }, 1000);
+    }
+    function show(){
+      clear();
+      var st = steps[i];
+      q(".g-count").textContent = t("stepOf",{i:i+1, n:steps.length});
+      q(".g-step").textContent = st.text;
+      q(".g-prev").disabled = i===0;
+      q(".g-next").textContent = i===steps.length-1 ? t("gDone") : t("gNext");
+      q(".g-pause").hidden = !st.secs; paused = false; q(".g-pause").textContent = t("gPause");
+      left = st.secs; q(".g-timer").textContent = st.secs ? fmt(left) : "";
+      // Announce first, then the clock runs; fallback in case the device never reports the end.
+      var started = false;
+      var go = function(){ if(started || steps[i]!==st || !st.secs) return; started = true; startTimer(); };
+      voice.speak(st.text, go);
+      setTimeout(go, 1500 + st.text.split(/\s+/).length*450);
+    }
+    function next(){
+      if(i >= steps.length-1){
+        clear(); voice.speak(t("gSaid"));
+        q(".g-step").textContent = t("gFinished"); q(".g-timer").textContent = ""; q(".g-count").textContent = coachName;
+        var b = el('<button class="btn">'+esc(t("gClose"))+'</button>');
+        q(".g-nav").replaceChildren(b); b.addEventListener("click", close);
+        return;
+      }
+      i += 1; show();
+    }
+    q(".g-x").addEventListener("click", close);
+    q(".g-next").addEventListener("click", next);
+    q(".g-prev").addEventListener("click", function(){ if(i>0){ i -= 1; show(); } });
+    q(".g-pause").addEventListener("click", function(){
+      paused = !paused; q(".g-pause").textContent = paused ? t("gResume") : t("gPause");
+      if(paused) voice.stop();
+    });
+    voice.unlock(); show();
+  }
+
   // ---------- Chat ----------
   function viewChat(k){
     rerender = function(){ viewChat(k); };
@@ -564,6 +724,7 @@
         '<p class="sub" style="font-size:.7rem;margin:-4px 0 8px">'+esc(t("chatNote"))+'</p>'+
         '<div class="log" id="log"></div>'+
         '<div class="inrow"><textarea id="in" rows="1" placeholder="'+esc(t("message",{name:c.name}))+'"></textarea>'+
+        (voice.canListen() ? '<button class="btn ghost mic" id="mic" aria-label="'+esc(t("speakTo",{name:c.name}))+'">🎙️</button>' : '')+
         '<button class="btn" id="send" aria-label="'+esc(t("send"))+'">➤</button></div>'+
       '</div>');
     app.replaceChildren(wrap);
@@ -574,12 +735,26 @@
       log.replaceChildren();
       if(!history.length){ log.appendChild(el('<div class="msg bot">'+esc(t(c.greetKey||"greetDefault"))+'</div>')); }
       history.forEach(function(m){
-        log.appendChild(el('<div class="msg '+(m.role==="user"?"user":"bot")+'">'+esc(m.content).replace(/\n/g,"<br>")+'</div>'));
+        var node = el('<div class="msg '+(m.role==="user"?"user":"bot")+'">'+esc(m.content).replace(/\n/g,"<br>")+'</div>');
+        if(m.role!=="user" && !m.error){
+          var tools = el('<div class="msg-tools"></div>');
+          var hear = el('<button class="chip">'+esc(t("listen"))+'</button>');
+          hear.addEventListener("click", function(){ voice.unlock(); voice.speak(m.content); });
+          tools.appendChild(hear);
+          var steps = parseSteps(m.content);
+          if(steps.length >= 2){
+            var g = el('<button class="chip">'+esc(t("startGuide"))+'</button>');
+            g.addEventListener("click", function(){ openGuide(steps, c.name); });
+            tools.appendChild(g);
+          }
+          node.appendChild(tools);
+        }
+        log.appendChild(node);
       });
       window.scrollTo(0, document.body.scrollHeight);
     }
 
-    function send(){
+    function send(spoken){
       var text = (input.value||"").trim();
       if(!text || sendBtn.disabled) return;
       if(!accessOk()) return viewPaywall();
@@ -606,14 +781,52 @@
       }).then(function(d){
         if(!d.text) throw new Error("empty");
         history.push({role:"assistant", content:d.text});
+        if(spoken===true) voice.speak(d.text);
       }).catch(function(){
         history.push({role:"assistant", content:t("cantReach",{name:c.name}), error:true});
       }).then(function(){
         S.set(histKey, history.slice(-40)); sendBtn.disabled=false; render();
       });
     }
-    sendBtn.addEventListener("click", send);
-    input.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(); }});
+    sendBtn.addEventListener("click", function(){ voice.unlock(); send(false); });
+    input.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(false); }});
+
+    // Mic: tap to talk, tap again to send. Server transcription when available, else the browser's.
+    var mic = wrap.querySelector("#mic"), recording = null, srRec = null, placeholder = input.placeholder;
+    function micIdle(){ mic.classList.remove("rec"); mic.disabled = false; mic.textContent = "🎙️"; input.placeholder = placeholder; }
+    function micBusy(){ mic.classList.add("rec"); mic.textContent = "⏹"; mic.setAttribute("aria-label", t("stopSend")); input.placeholder = t("listening"); }
+    function micFail(key){ micIdle(); input.placeholder = t(key); setTimeout(function(){ input.placeholder = placeholder; }, 4000); }
+    function useText(text){
+      if(!text){ return micFail("micErr"); }
+      input.value = text; send(true);
+    }
+    if(mic) mic.addEventListener("click", function(){
+      voice.unlock(); voice.stop();
+      if(!accessOk()) return viewPaywall();
+      if(voice.serverOn && voice.hasRecorder()){
+        if(!recording){
+          voice.record().then(function(r){ recording = r; micBusy(); })
+            .catch(function(){ micFail("micDenied"); });
+          return;
+        }
+        var r = recording; recording = null;
+        mic.classList.remove("rec"); mic.textContent = "…"; mic.disabled = true;
+        r.stop().then(voice.transcribe).then(function(text){ micIdle(); useText(text); })
+          .catch(function(){ micFail("micErr"); });
+        return;
+      }
+      if(SR){
+        if(srRec){ srRec.stop(); return; }
+        var heard = "";
+        srRec = new SR(); srRec.lang = VOICE_LANG[LANG] || "en-US"; srRec.interimResults = false; srRec.maxAlternatives = 1;
+        srRec.onresult = function(e){ heard = (e.results[0] && e.results[0][0] && e.results[0][0].transcript) || ""; };
+        srRec.onerror = function(e){ heard = ""; if(e.error==="not-allowed") micFail("micDenied"); };
+        srRec.onend = function(){ srRec = null; micIdle(); if(heard) useText(heard.trim()); };
+        try{ srRec.start(); micBusy(); }catch(e){ srRec = null; micFail("micErr"); }
+        return;
+      }
+      micFail("micErr");
+    });
     render();
   }
 

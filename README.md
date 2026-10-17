@@ -37,6 +37,7 @@ manifest.json                  → PWA (add to home screen)
 2. Netlify → **Add new site → Import from Git**, pick the repo. `netlify.toml` is read automatically.
 3. **Site settings → Environment variables:**
    - `ANTHROPIC_API_KEY` or `ANTHROPIC_KEY` (required) — your Claude API key.
+   - `OPENAI_API_KEY` (optional) — enables reliable voice input (whisper-1, about $0.006 per minute). Without it the mic uses the browser's own speech recognition where available.
    - `ALLOWED_ORIGINS` (before launch) — your live URL, e.g. `https://matchplan.netlify.app`.
    - `ACCESS_TOKENS` (optional) — comma-separated purchase tokens for paid users.
    - **Lead capture → Airtable "Steuerzentrale":**
