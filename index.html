@@ -1,119 +1,835 @@
-<!doctype html>
-<html lang="de">
-<head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Inner Match</title>
-<meta name="description" content="Inner Match – der Tennis-Adventskalender für mentale Stärke. 24 Türen, kostenlos, ohne Anmeldung.">
-<meta name="theme-color" content="#C4552D">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Inner Match">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Barlow:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<canvas id="fx" aria-hidden="true"></canvas>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matchplan — Your Coaches</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{
+    --bg:#0e1726; --surface:#16223a; --surface-2:#1d2c49; --ink:#f4f7fb;
+    --ink-2:#a9b6cc; --line:rgba(255,255,255,.10); --accent:#3d7dff; --accent-2:#2a78d6;
+    --good:#22b573;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+  #app{max-width:520px;margin:0 auto;min-height:100vh;
+    padding:calc(env(safe-area-inset-top,0) + 22px) 18px calc(env(safe-area-inset-bottom,0) + 28px)}
+  h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.02em}
+  h2{font-size:1.2rem;margin:0 0 14px}
+  p.sub{color:var(--ink-2);margin:0 0 20px;line-height:1.5}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:14px 22px;border:none;border-radius:999px;font-size:1rem;font-weight:600;
+    cursor:pointer;font-family:inherit;background:var(--accent);color:#fff;width:100%}
+  .btn.ghost{background:transparent;color:var(--ink-2);border:1px solid var(--line)}
+  .btn:disabled{opacity:.5}
+  input,textarea{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);font-size:1rem;font-family:inherit}
+  input:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+  label{display:block;font-size:.85rem;color:var(--ink-2);margin:14px 0 6px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+  /* Hub tiles */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:16px;cursor:pointer;text-align:left;color:var(--ink);display:flex;flex-direction:column;
+    gap:8px;min-height:120px;transition:transform .08s,border-color .12s}
+  .tile:active{transform:scale(.98)}
+  .tile:hover{border-color:var(--accent)}
+  .tile .ic{font-size:1.9rem}
+  .tile .nm{font-weight:700}
+  .tile .tg{font-size:.82rem;color:var(--ink-2);line-height:1.35}
+  .tile.wide{grid-column:1 / -1;flex-direction:row;align-items:center;min-height:0}
+  .tile.wide .ic{font-size:1.6rem}
+  .tile.soon{opacity:.6}
+  .badge{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:2px 8px;align-self:flex-start}
+  .badge.soon{color:var(--ink-2);border-color:var(--line)}
+  .badge.on{color:var(--good);border-color:var(--good)}
+  .trialbar{font-size:.8rem;color:var(--ink-2);margin-top:18px;text-align:center}
+  /* Chat */
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .topbar button{background:none;border:none;color:var(--ink-2);font-size:1.4rem;cursor:pointer;padding:4px}
+  .log{display:flex;flex-direction:column;gap:8px;padding:4px 0 96px}
+  .msg{max-width:86%;padding:11px 14px;border-radius:16px;line-height:1.5;font-size:.95rem;overflow-wrap:break-word}
+  .msg.user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+  .msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msg.typing{color:var(--ink-2)}
+  .msg-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{background:var(--surface-2);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:.8rem;font-family:inherit;cursor:pointer}
+  .inrow .btn.mic{padding:14px 14px;background:var(--surface);border:1px solid var(--line);color:var(--ink)}
+  .inrow .btn.mic.rec{background:#d93a3a;border-color:transparent;color:#fff;animation:micpulse 1.2s ease-in-out infinite}
+  @keyframes micpulse{50%{opacity:.6}}
+  .guide{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0) + 18px) 20px calc(env(safe-area-inset-bottom,0) + 20px);max-width:520px;margin:0 auto}
+  .guide-top{display:flex;justify-content:space-between;align-items:center;color:var(--ink-2);font-size:.9rem}
+  .g-x{background:none;border:none;color:var(--ink-2);font-size:1.3rem;cursor:pointer}
+  .g-step{flex:1;display:flex;align-items:center;font-size:1.6rem;line-height:1.35;font-weight:600}
+  .g-timer{font-size:3.2rem;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;min-height:4rem}
+  .g-nav{display:flex;gap:10px;margin-top:16px}
+  .g-nav .btn{flex:1;padding:18px 8px}
+  .inrow{position:fixed;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;
+    display:flex;gap:8px;padding:10px 18px calc(env(safe-area-inset-bottom,0) + 12px);
+    background:linear-gradient(transparent,var(--bg) 22%)}
+  .inrow textarea{flex:1;resize:none}
+  .inrow .btn{width:auto;padding:14px 18px}
+  .steps{color:var(--ink-2);font-size:.8rem;margin-bottom:10px}
+  .center{min-height:80vh;display:flex;flex-direction:column;justify-content:center}
+  .price{display:flex;gap:10px;margin-top:14px}
+  .price .card{flex:1;text-align:center}
+  .price .amt{font-size:1.4rem;font-weight:800;margin:4px 0}
+  a.plain{color:var(--accent);text-decoration:none}
+  .picks{display:flex;flex-direction:column;gap:10px;margin:16px 0 18px;text-align:left}
+  .pick{display:flex;align-items:center;gap:12px;background:var(--surface);
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;cursor:pointer}
+  .pick:hover{border-color:var(--accent)}
+  .pick input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent)}
+  .consent{display:flex;gap:10px;align-items:flex-start;margin:14px 0 10px;font-size:.8rem;color:var(--ink-2);line-height:1.4;cursor:pointer}
+  .consent input{width:18px;height:18px;flex:0 0 auto;margin-top:1px;accent-color:var(--accent);padding:0}
+  .consent a,.legal a,p.sub a{color:var(--ink)}
+  .legal{text-align:center;font-size:.72rem;color:var(--ink-2);margin-top:14px}
+  .pick.bundle{border-color:rgba(61,125,255,.45);background:rgba(61,125,255,.07)}
+  .pk-main{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+  .pk-name{font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pk-tag{font-size:.8rem;color:var(--ink-2)}
+  .pk-price{font-weight:700;white-space:nowrap}
+  .hidden{display:none}
+  .langsw{display:flex;gap:4px;justify-content:flex-end;margin-bottom:8px}
+  .langsw button{font:inherit;font-size:.72rem;font-weight:700;letter-spacing:.04em;padding:5px 9px;border-radius:999px;
+    border:1px solid var(--line);background:none;color:var(--ink-2);cursor:pointer}
+  .langsw button[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
+</style>
 
-<header class="top">
-  <div class="brand"><span class="ball-dot" aria-hidden="true"></span><span>Inner Match</span></div>
-  <nav class="tabs" role="tablist">
-    <button role="tab" id="tabCal" aria-selected="true" data-view="cal"></button>
-    <button role="tab" id="tabCab" aria-selected="false" data-view="cab"></button>
-  </nav>
-  <div class="ctrl">
-    <button id="soundBtn" class="pill" aria-pressed="true"></button>
-    <div class="lang" role="group" aria-label="Sprache / Language">
-      <button data-lang="de">DE</button><button data-lang="en">EN</button>
-    </div>
-  </div>
-</header>
+<div id="app"></div>
 
-<main>
-  <section id="viewCal" class="view">
-    <div class="hero">
-      <h1>Inner <span>Match</span></h1>
-      <p class="tagline" data-ui="tagline"></p>
-      <p class="intro" data-ui="intro"></p>
-    </div>
-    <div class="net" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="court"><div class="grid" id="grid"></div></div>
-    <div class="basket"><span data-ui="basket"></span> <b id="basketCount">0 / 25</b><div class="balls" id="balls" aria-hidden="true"></div></div>
-    <button id="installBtn" class="pill install" hidden data-ui="install"></button>
-    <p id="iosHint" class="note" hidden data-ui="installIos"></p>
-  </section>
+<script>
+(function(){
+  "use strict";
+  // ---------- Language (EN / DE / FR) ----------
+  // Picked once, remembered on this device; the coaches answer in the same language.
+  var I18N = {
+    en: {
+      disclaimer: "These coaches give performance, nutrition and mindset support. They are NOT medical, psychological or therapeutic advice, and NOT a substitute for a doctor, dietitian or therapist. Don't use them for diagnosis or treatment. If you're in crisis or need medical help, contact a qualified professional or emergency services.",
+      onbTitle: "Your coaches, in one place 🎾",
+      onbSub: "Markus for performance & nutrition, Sam for the mental game, Alex for stretching & mobility — grounded in your body data. Start your free {n}-day trial.",
+      email: "Your email", startTrial: "Start free trial", starting: "Starting…",
+      noCard: "No card required. We'll only email you about your coaching.",
+      important: "Important.", agree: "By starting, you agree this is not medical or therapeutic advice.",
+      tagMarkus: "Performance & nutrition", tagSam: "Mental game", tagAlex: "Stretching & mobility",
+      bundleName: "All three — 3 for the price of 2", bestValue: "Best value", perMonth: "/ mo",
+      chooseTitle: "Choose your coaching", chooseSub: "Pick one coach — or take all three for the price of two. You can change later.",
+      toCheckout: "Continue to checkout", openingCheckout: "Opening checkout…", checkoutErr: "Sorry — couldn't start checkout. Please try again.",
+      alreadyBought: "Already bought? Open the link from your purchase email — it unlocks this app.",
+      fullAccess: "Full access", trialLeft: "Free trial · {n} day left", trialLeftPl: "Free trial · {n} days left",
+      soon: "Soon", homeTitle: "Your coaches", homeSub: "Pick who you want to talk to.",
+      whoopTile: "Connect your Whoop", whoopTileSub: "Ground your briefing in real recovery, sleep & strain.",
+      coachSam: "Mental game — matches, pressure, focus.", coachMarkus: "Performance & nutrition — fuel, load, recovery.", coachAlex: "Stretching, mobility, warm-ups — sessions and plans.",
+      greetSam: "Hey — what's up? What's on your mind today, on court or in your head?",
+      greetAlex: "Hey — I'm Alex. What's on today: a match, practice, travel or a rest day, and how much time do you have?",
+      bundleHint: "Two coaches cost the same as all three — so you get all three.",
+      greetMarkus: "Hey — I've got your profile. What's on for today: a training day, a match, or figuring out what to eat?",
+      greetDefault: "Hey! What do you need today?",
+      soonText: "{name} is coming soon. It will bring a full library of stretching and mobility routines.",
+      whoopTitle: "Connect Whoop",
+      whoopP1: "Connecting your Whoop lets your morning briefing use your real recovery, sleep and strain — the difference between generic advice and advice for <em>your</em> body today.",
+      whoopP2: "Setup is done together so it's connected correctly to your account. Request access and we'll get you set up.",
+      whoopBtn: "Request Whoop setup", whoopSent: "Request sent ✓",
+      intakeTitle: "A few things about you", intakeSub: "Markus uses this to tailor fuel and training to you. Stays private.",
+      age: "Age", height: "Height (cm)", weight: "Weight (kg)", where: "Where do you live?", intol: "Food intolerances / allergies",
+      phAge: "e.g. 21", phHeight: "e.g. 183", phWeight: "e.g. 76", phWhere: "e.g. Irvine, California", phIntol: "e.g. lactose, none",
+      saveStart: "Save & start",
+      legImp: "Imprint", legPriv: "Privacy", legTerms: "Terms & withdrawal", legCancel: "Cancel contracts here", legWithdraw: "Withdraw from contract",
+      startNow: "I agree that my subscription renews automatically every month at the price shown until I cancel (cancel anytime online), and I request that coaching starts right away. If I withdraw within 14 days, I pay only for the days already used.",
+      termsNote: "Monthly subscription, renews automatically until you cancel. Our <a href=\"/en/terms.html\" target=\"_blank\">terms</a>, <a href=\"/en/terms.html#withdrawal\" target=\"_blank\">right of withdrawal</a> and <a href=\"/en/privacy.html\" target=\"_blank\">privacy policy</a> apply. Cancel anytime: <a href=\"/en/cancel.html\" target=\"_blank\">cancel here</a>.",
+      healthConsent: "I consent to these details (incl. intolerances = health data) being sent to the AI provider Anthropic (USA) so Markus can answer. I can withdraw this anytime. <a href=\"/en/privacy.html\" target=\"_blank\">Privacy</a>",
+      chatNote: "Not medical or therapeutic advice. For diagnosis or a crisis, see a professional.",
+      speakTo: "Speak to {name}", stopSend: "Stop and send", listening: "Listening … tap ⏹ to send", micErr: "Couldn't hear you — try again or type.", micDenied: "Please allow the microphone for this site.", listen: "🔊 Listen", startGuide: "▶ Guided session", stepOf: "Step {i} of {n}", gBack: "‹ Back", gNext: "Next ›", gDone: "Done ✓", gPause: "Pause", gResume: "Resume", gClose: "Close", gFinished: "Done. Nice work! 🎾", gSaid: "Nice work. Session done.", gThree: "Three",
+      message: "Message {name} …", typing: "{name} is typing …", cantReach: "Can't reach {name} right now — try again in a bit.",
+      send: "Send", language: "Language"
+    },
+    de: {
+      disclaimer: "Diese Coaches unterstützen bei Leistung, Ernährung und mentaler Stärke. Sie sind KEINE medizinische, psychologische oder therapeutische Beratung und ersetzen keine Ärztin, keinen Arzt, keine Ernährungsberatung und keine Therapie. Nutze sie nicht für Diagnosen oder Behandlungen. In einer Krise oder bei medizinischen Fragen wende dich an Fachleute oder den Notruf.",
+      onbTitle: "Deine Coaches an einem Ort 🎾",
+      onbSub: "Markus für Leistung und Ernährung, Sam für den Kopf, Alex für Dehnen und Beweglichkeit – abgestimmt auf deine Körperdaten. Starte deine kostenlose {n}-Tage-Testphase.",
+      email: "Deine E-Mail", startTrial: "Kostenlos testen", starting: "Wird gestartet …",
+      noCard: "Keine Kreditkarte nötig. Wir schreiben dir nur zu deinem Coaching.",
+      important: "Wichtig.", agree: "Mit dem Start bestätigst du, dass dies keine medizinische oder therapeutische Beratung ist.",
+      tagMarkus: "Leistung & Ernährung", tagSam: "Mentale Stärke", tagAlex: "Dehnen & Beweglichkeit",
+      bundleName: "Alle drei – 3 zum Preis von 2", bestValue: "Bester Preis", perMonth: "/ Monat",
+      chooseTitle: "Wähle dein Coaching", chooseSub: "Ein Coach – oder alle drei zum Preis von zwei. Du kannst später wechseln.",
+      toCheckout: "Weiter zur Bezahlung", openingCheckout: "Bezahlung wird geöffnet …", checkoutErr: "Die Bezahlung konnte nicht gestartet werden. Bitte versuch es noch einmal.",
+      alreadyBought: "Schon gekauft? Öffne den Link aus deiner Kauf-E-Mail – er schaltet die App frei.",
+      fullAccess: "Voller Zugang", trialLeft: "Testphase · noch {n} Tag", trialLeftPl: "Testphase · noch {n} Tage",
+      soon: "Bald", homeTitle: "Deine Coaches", homeSub: "Mit wem willst du sprechen?",
+      whoopTile: "Whoop verbinden", whoopTileSub: "Dein Briefing mit echter Erholung, Schlaf und Belastung.",
+      coachSam: "Mentale Stärke – Matches, Druck, Fokus.", coachMarkus: "Leistung & Ernährung – Energie, Belastung, Erholung.", coachAlex: "Dehnen, Mobility, Warm-ups – Einheiten und Pläne.",
+      greetSam: "Hey – was ist los? Was beschäftigt dich heute, auf dem Platz oder im Kopf?",
+      greetAlex: "Hey – ich bin Alex. Was steht heute an: Match, Training, Reise oder Ruhetag, und wie viel Zeit hast du?",
+      bundleHint: "Zwei Coaches kosten so viel wie alle drei – du bekommst also alle drei.",
+      greetMarkus: "Hey – dein Profil habe ich. Was steht heute an: Training, ein Match oder die Frage, was du essen sollst?",
+      greetDefault: "Hey! Was brauchst du heute?",
+      soonText: "{name} kommt bald – mit einer ganzen Bibliothek an Dehn- und Mobility-Routinen.",
+      whoopTitle: "Whoop verbinden",
+      whoopP1: "Mit deinem Whoop nutzt dein Morgen-Briefing deine echte Erholung, deinen Schlaf und deine Belastung – der Unterschied zwischen allgemeinen Tipps und Tipps für <em>deinen</em> Körper heute.",
+      whoopP2: "Die Einrichtung machen wir gemeinsam, damit alles richtig mit deinem Konto verbunden ist. Fordere sie an, wir melden uns.",
+      whoopBtn: "Whoop-Einrichtung anfragen", whoopSent: "Anfrage gesendet ✓",
+      intakeTitle: "Ein paar Dinge über dich", intakeSub: "Damit stimmt Markus Ernährung und Training auf dich ab. Bleibt privat.",
+      age: "Alter", height: "Größe (cm)", weight: "Gewicht (kg)", where: "Wo wohnst du?", intol: "Unverträglichkeiten / Allergien",
+      phAge: "z. B. 21", phHeight: "z. B. 183", phWeight: "z. B. 76", phWhere: "z. B. Stuttgart", phIntol: "z. B. Laktose, keine",
+      saveStart: "Speichern & loslegen",
+      legImp: "Impressum", legPriv: "Datenschutz", legTerms: "AGB & Widerruf", legCancel: "Verträge hier kündigen", legWithdraw: "Vertrag widerrufen",
+      startNow: "Ich bin einverstanden, dass sich mein Abo jeden Monat zum angezeigten Preis automatisch verlängert, bis ich kündige (jederzeit online), und verlange, dass das Coaching sofort beginnt. Widerrufe ich innerhalb von 14 Tagen, zahle ich nur die bereits genutzten Tage.",
+      termsNote: "Monatsabo, verlängert sich automatisch bis zur Kündigung. Es gelten unsere <a href=\"/agb.html\" target=\"_blank\">AGB</a>, die <a href=\"/agb.html#widerruf\" target=\"_blank\">Widerrufsbelehrung</a> und der <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>. Jederzeit kündbar: <a href=\"/kuendigen.html\" target=\"_blank\">hier kündigen</a>.",
+      healthConsent: "Ich willige ein, dass diese Angaben (inkl. Unverträglichkeiten = Gesundheitsdaten) an den KI-Anbieter Anthropic (USA) übermittelt werden, damit Markus antworten kann. Widerruf jederzeit möglich. <a href=\"/datenschutz.html\" target=\"_blank\">Datenschutz</a>",
+      chatNote: "Keine medizinische oder therapeutische Beratung. Für Diagnosen oder in einer Krise: bitte Fachleute fragen.",
+      speakTo: "Mit {name} sprechen", stopSend: "Stopp und senden", listening: "Ich höre zu … ⏹ zum Senden", micErr: "Nicht verstanden – versuch es noch einmal oder tippe.", micDenied: "Bitte erlaube das Mikrofon für diese Seite.", listen: "🔊 Vorlesen", startGuide: "▶ Geführt üben", stepOf: "Schritt {i} von {n}", gBack: "‹ Zurück", gNext: "Weiter ›", gDone: "Fertig ✓", gPause: "Pause", gResume: "Weiter", gClose: "Schließen", gFinished: "Geschafft. Stark! 🎾", gSaid: "Stark. Einheit geschafft.", gThree: "Drei",
+      message: "Nachricht an {name} …", typing: "{name} schreibt …", cantReach: "{name} ist gerade nicht erreichbar – versuch es gleich noch einmal.",
+      send: "Senden", language: "Sprache"
+    },
+    fr: {
+      disclaimer: "Ces coachs t'accompagnent sur la performance, la nutrition et le mental. Ils ne remplacent PAS un avis médical, psychologique ou thérapeutique, ni un médecin, un diététicien ou un thérapeute. Ne les utilise pas pour un diagnostic ou un traitement. En cas de crise ou de besoin médical, contacte un professionnel qualifié ou les urgences.",
+      onbTitle: "Tes coachs, au même endroit 🎾",
+      onbSub: "Markus pour la performance et la nutrition, Sam pour le mental, Alex pour les étirements et la mobilité — à partir de tes données corporelles. Commence ton essai gratuit de {n} jours.",
+      email: "Ton e-mail", startTrial: "Commencer l'essai gratuit", starting: "Démarrage…",
+      noCard: "Aucune carte requise. Nous t'écrirons uniquement au sujet de ton coaching.",
+      important: "Important.", agree: "En commençant, tu acceptes qu'il ne s'agit pas d'un avis médical ou thérapeutique.",
+      tagMarkus: "Performance & nutrition", tagSam: "Mental", tagAlex: "Étirements & mobilité",
+      bundleName: "Les trois — 3 pour le prix de 2", bestValue: "Meilleur prix", perMonth: "/ mois",
+      chooseTitle: "Choisis ton coaching", chooseSub: "Un seul coach — ou les trois pour le prix de deux. Tu pourras changer plus tard.",
+      toCheckout: "Passer au paiement", openingCheckout: "Ouverture du paiement…", checkoutErr: "Désolé — impossible de lancer le paiement. Réessaie.",
+      alreadyBought: "Déjà acheté ? Ouvre le lien de ton e-mail d'achat — il débloque l'appli.",
+      fullAccess: "Accès complet", trialLeft: "Essai gratuit · {n} jour restant", trialLeftPl: "Essai gratuit · {n} jours restants",
+      soon: "Bientôt", homeTitle: "Tes coachs", homeSub: "Avec qui veux-tu parler ?",
+      whoopTile: "Connecter ton Whoop", whoopTileSub: "Un briefing basé sur ta vraie récupération, ton sommeil et ta charge.",
+      coachSam: "Mental — matchs, pression, concentration.", coachMarkus: "Performance & nutrition — énergie, charge, récupération.", coachAlex: "Étirements, mobilité, échauffements — séances et plans.",
+      greetSam: "Salut — quoi de neuf ? Qu'est-ce qui t'occupe aujourd'hui, sur le court ou dans la tête ?",
+      greetAlex: "Salut — moi c'est Alex. Qu'est-ce qui est prévu aujourd'hui : match, entraînement, voyage ou repos, et combien de temps as-tu ?",
+      bundleHint: "Deux coachs coûtent autant que les trois — tu as donc les trois.",
+      greetMarkus: "Salut — j'ai ton profil. Qu'est-ce qui est prévu aujourd'hui : entraînement, match, ou savoir quoi manger ?",
+      greetDefault: "Salut ! De quoi as-tu besoin aujourd'hui ?",
+      soonText: "{name} arrive bientôt, avec toute une bibliothèque de routines d'étirements et de mobilité.",
+      whoopTitle: "Connecter Whoop",
+      whoopP1: "Avec ton Whoop, ton briefing du matin utilise ta vraie récupération, ton sommeil et ta charge — la différence entre des conseils génériques et des conseils pour <em>ton</em> corps aujourd'hui.",
+      whoopP2: "La configuration se fait ensemble pour que tout soit bien relié à ton compte. Fais la demande et on s'en occupe.",
+      whoopBtn: "Demander la configuration Whoop", whoopSent: "Demande envoyée ✓",
+      intakeTitle: "Quelques infos sur toi", intakeSub: "Markus s'en sert pour adapter nutrition et entraînement. Reste privé.",
+      age: "Âge", height: "Taille (cm)", weight: "Poids (kg)", where: "Où habites-tu ?", intol: "Intolérances / allergies",
+      phAge: "ex. 21", phHeight: "ex. 183", phWeight: "ex. 76", phWhere: "ex. Lyon", phIntol: "ex. lactose, aucune",
+      saveStart: "Enregistrer & commencer",
+      legImp: "Mentions légales", legPriv: "Confidentialité", legTerms: "CGV & rétractation", legCancel: "Résilier le contrat ici", legWithdraw: "Se rétracter du contrat",
+      startNow: "J'accepte que mon abonnement se renouvelle automatiquement chaque mois au prix indiqué jusqu'à résiliation (en ligne, à tout moment), et je demande que le coaching commence immédiatement. Si je me rétracte sous 14 jours, je ne paie que les jours déjà utilisés.",
+      termsNote: "Abonnement mensuel, renouvelé automatiquement jusqu'à résiliation. Nos <a href=\"/en/terms.html\" target=\"_blank\">conditions</a> (en anglais), le <a href=\"/en/terms.html#withdrawal\" target=\"_blank\">droit de rétractation</a> et la <a href=\"/en/privacy.html\" target=\"_blank\">confidentialité</a> s'appliquent. Résiliable à tout moment : <a href=\"/en/cancel.html\" target=\"_blank\">résilier ici</a>.",
+      healthConsent: "J'accepte que ces données (y compris intolérances = données de santé) soient transmises au fournisseur d'IA Anthropic (USA) pour que Markus puisse répondre. Révocable à tout moment. <a href=\"/en/privacy.html\" target=\"_blank\">Confidentialité</a>",
+      chatNote: "Pas un avis médical ou thérapeutique. Pour un diagnostic ou une crise, consulte un professionnel.",
+      speakTo: "Parler à {name}", stopSend: "Arrêter et envoyer", listening: "J'écoute … ⏹ pour envoyer", micErr: "Je n'ai pas compris — réessaie ou écris.", micDenied: "Autorise le micro pour ce site.", listen: "🔊 Écouter", startGuide: "▶ Séance guidée", stepOf: "Étape {i} sur {n}", gBack: "‹ Retour", gNext: "Suivant ›", gDone: "Terminé ✓", gPause: "Pause", gResume: "Reprendre", gClose: "Fermer", gFinished: "Terminé. Bravo ! 🎾", gSaid: "Bravo. Séance terminée.", gThree: "Trois",
+      message: "Message à {name} …", typing: "{name} écrit …", cantReach: "{name} n'est pas joignable pour le moment — réessaie dans un instant.",
+      send: "Envoyer", language: "Langue"
+    }
+  };
+  var LANG = (function(){
+    try{ var v = JSON.parse(localStorage.getItem("cf_lang")); if(I18N[v]) return v; }catch(e){}
+    var n = String(navigator.language||"en").slice(0,2).toLowerCase();
+    return I18N[n] ? n : "en";
+  })();
+  document.documentElement.lang = LANG;
+  function t(k, vars){
+    var s = (I18N[LANG] && I18N[LANG][k]) || I18N.en[k] || k;
+    if(vars) Object.keys(vars).forEach(function(v){ s = s.split("{"+v+"}").join(vars[v]); });
+    return s;
+  }
+  // The language switch re-draws whatever screen is open.
+  var rerender = function(){ route(); };
+  function langSwitch(){
+    var h = '<div class="langsw" role="group" aria-label="'+t("language")+'">';
+    ["en","de","fr"].forEach(function(l){
+      h += '<button type="button" data-lang="'+l+'" aria-pressed="'+(l===LANG)+'">'+l.toUpperCase()+'</button>';
+    });
+    return h + '</div>';
+  }
+  function bindLang(wrap){
+    wrap.querySelectorAll("[data-lang]").forEach(function(b){
+      b.addEventListener("click", function(){
+        LANG = b.getAttribute("data-lang");
+        try{ localStorage.setItem("cf_lang", JSON.stringify(LANG)); }catch(e){}
+        document.documentElement.lang = LANG;
+        rerender();
+      });
+    });
+  }
 
-  <section id="viewCab" class="view" hidden>
-    <h2 class="cab-title" data-ui="cabinet"></h2>
-    <p class="intro" data-ui="cabinetIntro"></p>
-    <h3 class="sec" data-ui="trophies"></h3>
-    <div class="trophies" id="trophies"></div>
-    <h3 class="sec" data-ui="tourDay"></h3>
-    <div class="tourday" id="tourday"></div>
-    <h3 class="sec" data-ui="learnings"></h3>
-    <ol class="learnings" id="learnings"></ol>
-    <div class="cab-actions">
-      <button id="pdfBtn" class="btn" data-ui="pdf"></button>
-      <p class="note" data-ui="privacy"></p>
-    </div>
-  </section>
+  // Display currency: US dollars for visitors in the Americas or via a US partner link,
+  // euros otherwise. Stripe holds both amounts on the same prices; checkout gets the same currency.
+  var CUR = (function(){
+    try{ var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; if(/^America\//.test(tz)) return "usd"; }catch(e){}
+    return "eur";
+  })();
+  var PRICE = CUR==="usd" ? { single:"$13.90", bundle:"$27.80" } : { single:"€12.90", bundle:"€25.80" };
 
-  <footer>
-    <span data-ui="f1"></span>
-    <span data-ui="f2"></span>
-    <label class="preview" id="previewWrap" hidden><input type="checkbox" id="preview"> <span data-ui="preview"></span></label>
-  </footer>
-</main>
+  var CFG = {
+    chatUrl: "/api/chat",
+    transcribeUrl: "/api/transcribe",
+    subscribeUrl: "/api/subscribe",
+    checkoutUrl: "/api/checkout",
+    trialDays: 7,
+    // Voca-style: the buyer picks coaches (or the bundle); the app asks the server to
+    // build a Stripe Checkout for exactly that selection. Prices/amounts live in Stripe;
+    // the labels below are display-only. `key` maps to a Stripe Price via env in checkout.js.
+    plans: [
+      { key:"markus",  name:"Markus",        tagKey:"tagMarkus",  price:PRICE.single },
+      { key:"sam",     name:"Sam Menton",    tagKey:"tagSam",     price:PRICE.single },
+      { key:"alex",    name:"Alex",          tagKey:"tagAlex",    price:PRICE.single }
+    ],
+    bundle: { key:"bundle", nameKey:"bundleName", tag:"Markus + Sam + Alex", price:PRICE.bundle }
+  };
 
-<div id="stage" class="stage" hidden>
-  <div class="door-anim" id="doorAnim" aria-hidden="true">
-    <div class="leaf"><span id="leafNum">1</span></div>
-    <div class="ball-drop"></div>
-  </div>
-  <article class="card" id="card" role="dialog" aria-modal="true" aria-labelledby="dTitle">
-    <div class="card-head">
-      <div class="ballnum" id="dNum">1</div>
-      <div><div class="eyebrow" id="dDate"></div><h2 id="dTitle"></h2></div>
-    </div>
-    <div class="card-body">
-      <p class="umpire"><span class="eyebrow" data-ui="umpire"></span><span id="dUmpire"></span></p>
-      <div class="text" id="dText"></div>
-      <div class="quote" id="dQuote"></div>
-      <figure class="voice" id="dVoice" hidden>
-        <div class="eyebrow" data-ui="voice"></div>
-        <blockquote id="dVoiceQ"></blockquote>
-        <p class="tr" id="dVoiceTr"></p>
-        <figcaption id="dVoiceWho"></figcaption>
-      </figure>
-      <div class="journal">
-        <p class="q" id="dQ"></p>
-        <p class="note" id="dJournalHint"></p>
-        <div id="fields"></div>
-        <div class="saved" id="dSaved" aria-live="polite"></div>
-      </div>
-      <div class="place">
-        <div class="eyebrow" data-ui="placeEyebrow"></div>
-        <div class="name" id="dPlace"></div>
-        <p data-ui="placeQ"></p>
-      </div>
-      <div class="teaser" id="dTeaser" hidden>
-        <div class="eyebrow" data-ui="teaserEyebrow"></div>
-        <strong id="dTeaserHead"></strong>
-        <span id="dTeaserText"></span>
-        <a class="btn ballbtn" id="teaserLink" target="_blank" rel="noopener" data-ui="teaserBtn"></a>
-      </div>
-      <button class="btn ghost" id="closeBtn" data-ui="close"></button>
-    </div>
-  </article>
-</div>
+  var COACHES = {
+    sam:     { name:"Sam Menton", icon:"🧠", tagKey:"coachSam", mode:"chat", greetKey:"greetSam" },
+    markus:  { name:"Markus",     icon:"🎾", tagKey:"coachMarkus", mode:"chat", intake:true, greetKey:"greetMarkus" },
+    alex:    { name:"Alex", icon:"🤸", tagKey:"coachAlex", mode:"chat", greetKey:"greetAlex" }
+  };
 
-<div class="toast" id="toast" role="status" hidden></div>
+  var app = document.getElementById("app");
+  var S = {
+    get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+    set:function(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  };
 
-<script src="app.js"></script>
-</body>
-</html>
+  // token from ?key=... unlocks paid access
+  (function(){
+    // Partner link (e.g. ?ref=lenard): remembered on this device and passed to Stripe,
+    // so each subscription shows which partner brought it (commission).
+    var r = location.search.match(/[?&]ref=([A-Za-z0-9_-]{1,30})/);
+    if(r && !S.get("cf_ref","")) S.set("cf_ref", r[1].toLowerCase());
+    var m = location.search.match(/[?&]key=([^&]+)/);
+    if(m){ S.set("cf_token", decodeURIComponent(m[1])); }
+    // Returning from Stripe Checkout: ?paid=1 grants access on this device (MVP).
+    // Production: a Stripe webhook (checkout.session.completed) issues a real per-buyer
+    // token and emails a ?key=TOKEN link — see checkout.js.
+    var p = location.search.match(/[?&]paid=([01])/);
+    if(p){
+      if(p[1]==="1") S.set("cf_paid", true);
+      // clean the query so a refresh doesn't re-trigger
+      try{ history.replaceState(null,"",location.pathname); }catch(e){}
+    }
+  })();
+
+  function el(html){var t=document.createElement("template");t.innerHTML=html.trim();return t.content.firstElementChild;}
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]);});}
+
+  function hasToken(){ return !!S.get("cf_token",""); }
+  function trialInfo(){
+    var start = S.get("cf_trialStart", null);
+    if(!start) return { active:false, daysLeft:0, started:false };
+    var days = (Date.now() - start) / 86400000;
+    var left = Math.ceil(CFG.trialDays - days);
+    return { active: left > 0, daysLeft: Math.max(0,left), started:true };
+  }
+  function isPaid(){ return !!S.get("cf_paid", false); }
+  function accessOk(){ return hasToken() || isPaid() || trialInfo().active; }
+
+  // ---------- Router ----------
+  function route(){
+    if(!S.get("cf_email", null)) return viewOnboard();
+    if(!accessOk()) return viewPaywall();
+    return viewHome();
+  }
+
+  // ---------- Onboarding + email capture → trial ----------
+  // German pages for DE, English pages for EN and FR (French versions to follow).
+  function legalLinks(){
+    var L = LANG==="de"
+      ? { imp:"/impressum.html", priv:"/datenschutz.html", terms:"/agb.html", cancel:"/kuendigen.html", withdraw:"/kuendigen.html?art=widerruf" }
+      : { imp:"/en/imprint.html", priv:"/en/privacy.html", terms:"/en/terms.html", cancel:"/en/cancel.html", withdraw:"/en/cancel.html?art=widerruf" };
+    return '<p class="legal"><a href="'+L.imp+'">'+esc(t("legImp"))+'</a> · '+
+      '<a href="'+L.priv+'">'+esc(t("legPriv"))+'</a> · '+
+      '<a href="'+L.terms+'">'+esc(t("legTerms"))+'</a><br>'+
+      '<a href="'+L.cancel+'">'+esc(t("legCancel"))+'</a> · '+
+      '<a href="'+L.withdraw+'">'+esc(t("legWithdraw"))+'</a></p>';
+  }
+
+  function viewOnboard(){
+    rerender = viewOnboard;
+    var wrap = el(
+      '<div class="center">'+ langSwitch() +
+        '<h1>'+esc(t("onbTitle"))+'</h1>'+
+        '<p class="sub">'+esc(t("onbSub",{n:CFG.trialDays}))+'</p>'+
+        '<div class="card">'+
+          '<label for="em">'+esc(t("email"))+'</label>'+
+          '<input id="em" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email">'+
+          '<div style="height:14px"></div>'+
+          '<button class="btn" id="go">'+esc(t("startTrial"))+'</button>'+
+          '<p class="sub" style="margin:12px 0 0;font-size:.78rem">'+esc(t("noCard"))+'</p>'+
+        '</div>'+
+        '<div class="card" style="margin-top:14px;border-color:rgba(250,178,25,.35)">'+
+          '<p class="sub" style="margin:0;font-size:.8rem"><strong>'+esc(t("important"))+'</strong> '+esc(t("disclaimer"))+'</p>'+
+        '</div>'+
+        '<p class="sub" style="margin-top:14px;font-size:.72rem">'+esc(t("agree"))+'</p>'+
+        legalLinks()+
+      '</div>');
+    app.replaceChildren(wrap); bindLang(wrap);
+    var input = wrap.querySelector("#em"), btn = wrap.querySelector("#go");
+    function submit(){
+      var email = (input.value||"").trim();
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ input.focus(); input.style.borderColor="var(--accent)"; return; }
+      btn.disabled = true; btn.textContent = t("starting");
+      S.set("cf_email", email);
+      S.set("cf_trialStart", Date.now());
+      // fire-and-forget email capture
+      try{ fetch(CFG.subscribeUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email:email, ts:new Date().toISOString()})}); }catch(e){}
+      viewHome();
+    }
+    btn.addEventListener("click", submit);
+    input.addEventListener("keydown", function(e){ if(e.key==="Enter") submit(); });
+  }
+
+  // ---------- Paywall (Voca-style dynamic checkout) ----------
+  // The buyer ticks the coaches they want (or the bundle); we ask the server to build a
+  // Stripe Checkout for exactly that selection and redirect there.
+  function viewPaywall(){
+    rerender = viewPaywall;
+    var opts = "";
+    CFG.plans.forEach(function(p){
+      opts += '<label class="pick" data-key="'+p.key+'">'+
+        '<input type="checkbox" data-key="'+p.key+'">'+
+        '<span class="pk-main"><span class="pk-name">'+esc(p.name)+'</span>'+
+        '<span class="pk-tag">'+esc(t(p.tagKey))+'</span></span>'+
+        '<span class="pk-price">'+esc(p.price+" "+t("perMonth"))+'</span></label>';
+    });
+    var b = CFG.bundle;
+    var bundleOpt = '<label class="pick bundle" data-key="'+b.key+'">'+
+      '<input type="checkbox" data-key="'+b.key+'">'+
+      '<span class="pk-main"><span class="pk-name">'+esc(t(b.nameKey))+' <span class="badge on">'+esc(t("bestValue"))+'</span></span>'+
+      '<span class="pk-tag">'+esc(b.tag)+'</span></span>'+
+      '<span class="pk-price">'+esc(b.price+" "+t("perMonth"))+'</span></label>';
+
+    var wrap = el(
+      '<div class="center">'+ langSwitch() +
+        '<h1>'+esc(t("chooseTitle"))+'</h1>'+
+        '<p class="sub">'+esc(t("chooseSub"))+'</p>'+
+        '<div class="picks">'+ bundleOpt + opts +'</div>'+
+        '<label class="consent"><input type="checkbox" id="startnow"><span>'+esc(t("startNow"))+'</span></label>'+
+        '<p class="sub" style="margin:0 0 12px;font-size:.78rem">'+t("termsNote")+'</p>'+
+        '<button class="btn" id="buy" disabled>'+esc(t("toCheckout"))+'</button>'+
+        '<p class="sub" id="buyerr" style="margin-top:10px;font-size:.8rem;color:var(--accent);display:none"></p>'+
+        '<p class="sub" style="margin-top:16px;font-size:.8rem">'+esc(t("alreadyBought"))+'</p>'+
+        '<p class="sub" style="margin-top:10px;font-size:.72rem">'+esc(t("disclaimer"))+'</p>'+
+        legalLinks()+
+      '</div>');
+    app.replaceChildren(wrap); bindLang(wrap);
+
+    var startNow = wrap.querySelector("#startnow");
+    var buy = wrap.querySelector("#buy");
+    var errBox = wrap.querySelector("#buyerr");
+    var boxes = Array.prototype.slice.call(wrap.querySelectorAll('.pick input[type=checkbox]'));
+    var bundleBox = wrap.querySelector('.pick.bundle input');
+
+    function selectedKeys(){
+      return boxes.filter(function(x){return x.checked;}).map(function(x){return x.getAttribute("data-key");});
+    }
+    function sync(){
+      // Two coaches cost the same as all three → switch to the bundle and say why.
+      var singles = boxes.filter(function(x){ return x!==bundleBox && x.checked; });
+      if(!bundleBox.checked && singles.length >= 2){
+        bundleBox.checked = true;
+        errBox.textContent = t("bundleHint"); errBox.style.display = "block";
+      }
+      // Bundle is exclusive with the individual coaches.
+      if(bundleBox.checked){
+        boxes.forEach(function(x){ if(x!==bundleBox){ x.checked=false; x.disabled=true; } });
+      } else {
+        boxes.forEach(function(x){ x.disabled=false; });
+      }
+      buy.disabled = selectedKeys().length===0 || !startNow.checked;
+    }
+    boxes.forEach(function(x){ x.addEventListener("change", sync); });
+    startNow.addEventListener("change", sync);
+
+    buy.addEventListener("click", function(){
+      var items = selectedKeys();
+      if(!items.length || !startNow.checked) return;
+      buy.disabled = true; buy.textContent = t("openingCheckout"); errBox.style.display="none";
+      fetch(CFG.checkoutUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ items:items, period:"monthly", email:S.get("cf_email",""), ref:S.get("cf_ref",""), lang:LANG, currency:CUR })})
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          if(d && d.url){ location.href = d.url; return; }
+          throw new Error(d && d.error || "checkout_failed");
+        })
+        .catch(function(){
+          buy.disabled=false; buy.textContent=t("toCheckout");
+          errBox.textContent=t("checkoutErr"); errBox.style.display="block";
+        });
+    });
+  }
+
+  // ---------- Home / hub ----------
+  function viewHome(){
+    rerender = viewHome;
+    var ti = trialInfo();
+    var trialLine = hasToken() ? '<span class="badge on">'+esc(t("fullAccess"))+'</span>'
+      : (ti.active ? esc(t(ti.daysLeft===1?"trialLeft":"trialLeftPl",{n:ti.daysLeft})) : "");
+    var tiles = "";
+    ["markus","sam","alex"].forEach(function(k){
+      var c = COACHES[k];
+      var badge = c.mode==="soon" ? '<span class="badge soon">'+esc(t("soon"))+'</span>' : '';
+      tiles += '<button class="tile'+(c.mode==="soon"?" soon":"")+'" data-coach="'+k+'">'+
+        '<span class="ic">'+c.icon+'</span>'+
+        '<span class="nm">'+esc(c.name)+'</span>'+
+        '<span class="tg">'+esc(t(c.tagKey))+'</span>'+ badge +'</button>';
+    });
+    var wrap = el(
+      '<div>'+ langSwitch() +
+        '<h1>'+esc(t("homeTitle"))+'</h1>'+
+        '<p class="sub">'+esc(t("homeSub"))+'</p>'+
+        '<div class="tiles">'+ tiles +
+          '<button class="tile wide" data-coach="whoop">'+
+            '<span class="ic">⌚</span>'+
+            '<span style="display:flex;flex-direction:column;gap:2px">'+
+              '<span class="nm">'+esc(t("whoopTile"))+'</span>'+
+              '<span class="tg">'+esc(t("whoopTileSub"))+'</span>'+
+            '</span></button>'+
+        '</div>'+
+        '<div class="trialbar">'+ trialLine +'</div>'+
+        '<p class="sub" style="margin-top:16px;font-size:.72rem;text-align:center">'+esc(t("disclaimer"))+'</p>'+
+        legalLinks()+
+      '</div>');
+    app.replaceChildren(wrap); bindLang(wrap);
+    wrap.querySelectorAll("[data-coach]").forEach(function(b){
+      b.addEventListener("click", function(){ openCoach(b.getAttribute("data-coach")); });
+    });
+  }
+
+  function openCoach(k){
+    if(k==="whoop") return viewWhoop();
+    var c = COACHES[k];
+    if(!c) return;
+    if(c.mode==="soon"){ return viewSoon(c); }
+    if(c.mode==="external"){ location.href = c.url; return; }
+    if(c.intake && !S.get("cf_profile", null)) return viewIntake(k);
+    viewChat(k);
+  }
+
+  function viewSoon(c){
+    rerender = function(){ viewSoon(c); };
+    var wrap = el(
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+c.icon+' '+esc(c.name)+'</h2></div>'+
+      '<div class="card"><p class="sub" style="margin:0">'+esc(t("soonText",{name:c.name}))+'</p></div></div>');
+    app.replaceChildren(wrap);
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+  }
+
+  function viewWhoop(){
+    rerender = viewWhoop;
+    var wrap = el(
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">⌚ '+esc(t("whoopTitle"))+'</h2></div>'+
+      '<div class="card">'+
+        '<p class="sub">'+t("whoopP1")+'</p>'+
+        '<p class="sub" style="margin-bottom:0">'+esc(t("whoopP2"))+'</p>'+
+        '<div style="height:14px"></div>'+
+        '<button class="btn" id="req">'+esc(t("whoopBtn"))+'</button>'+
+      '</div></div>');
+    app.replaceChildren(wrap);
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+    wrap.querySelector("#req").addEventListener("click", function(){
+      try{ fetch(CFG.subscribeUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({email:S.get("cf_email",""), request:"whoop", ts:new Date().toISOString()})}); }catch(e){}
+      wrap.querySelector("#req").textContent = t("whoopSent");
+      wrap.querySelector("#req").disabled = true;
+    });
+  }
+
+  // ---------- Markus intake ----------
+  function viewIntake(k){
+    rerender = function(){ viewIntake(k); };
+    var wrap = el(
+      '<div><div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+esc(t("intakeTitle"))+'</h2></div>'+
+      '<p class="steps">'+esc(t("intakeSub"))+'</p>'+
+      '<div class="card">'+
+        '<label>'+esc(t("age"))+'</label><input id="age" type="number" inputmode="numeric" placeholder="'+esc(t("phAge"))+'">'+
+        '<label>'+esc(t("height"))+'</label><input id="height" type="number" inputmode="numeric" placeholder="'+esc(t("phHeight"))+'">'+
+        '<label>'+esc(t("weight"))+'</label><input id="weight" type="number" inputmode="numeric" placeholder="'+esc(t("phWeight"))+'">'+
+        '<label>'+esc(t("where"))+'</label><input id="location" type="text" placeholder="'+esc(t("phWhere"))+'">'+
+        '<label>'+esc(t("intol"))+'</label><input id="intol" type="text" placeholder="'+esc(t("phIntol"))+'">'+
+        '<label class="consent"><input type="checkbox" id="hc"><span>'+t("healthConsent")+'</span></label>'+
+        '<button class="btn" id="save" disabled>'+esc(t("saveStart"))+'</button>'+
+      '</div></div>');
+    app.replaceChildren(wrap);
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+    var hc = wrap.querySelector("#hc"), save = wrap.querySelector("#save");
+    hc.addEventListener("change", function(){ save.disabled = !hc.checked; });
+    save.addEventListener("click", function(){
+      if(!hc.checked) return;
+      var p = {
+        age: wrap.querySelector("#age").value.trim(),
+        height: wrap.querySelector("#height").value.trim(),
+        weight: wrap.querySelector("#weight").value.trim(),
+        location: wrap.querySelector("#location").value.trim(),
+        intolerances: wrap.querySelector("#intol").value.trim()
+      };
+      S.set("cf_profile", p);
+      viewChat(k);
+    });
+  }
+
+  // ---------- Voice: speak to the coach, hear the answer, guided sessions ----------
+  // Speech-to-text runs on the server (OpenAI) when it is configured; otherwise the browser's own
+  // recognizer is used where it exists. Read-aloud uses the phone's built-in voice (free).
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var VOICE_LANG = { en:"en-US", de:"de-DE", fr:"fr-FR" };
+  var voice = {
+    serverOn:false, unlocked:false,
+    hasRecorder:function(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder); },
+    canListen:function(){ return voice.hasRecorder() || !!SR; },
+    // iOS only allows read-aloud after it was started once by a tap.
+    unlock:function(){
+      if(!("speechSynthesis" in window) || voice.unlocked) return;
+      try{ speechSynthesis.speak(new SpeechSynthesisUtterance(" ")); voice.unlocked = true; }catch(e){}
+    },
+    clean:function(text){
+      return String(text||"").replace(/\*\*|__|`|#+\s/g,"")
+        .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu,"").replace(/\s+/g," ").trim();
+    },
+    speak:function(text, onEnd){
+      if(!("speechSynthesis" in window)){ if(onEnd) onEnd(); return; }
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(voice.clean(text)), lang = VOICE_LANG[LANG] || "en-US";
+      u.lang = lang;
+      var v = speechSynthesis.getVoices().filter(function(x){ return x.lang && x.lang.replace("_","-").indexOf(lang)===0; })[0];
+      if(v) u.voice = v;
+      if(onEnd){ u.onend = onEnd; u.onerror = onEnd; }
+      speechSynthesis.speak(u);
+    },
+    stop:function(){ if("speechSynthesis" in window) speechSynthesis.cancel(); },
+    record:function(){
+      return navigator.mediaDevices.getUserMedia({ audio:true }).then(function(stream){
+        var mime = ["audio/mp4","audio/webm;codecs=opus","audio/webm"].filter(function(x){
+          return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(x); })[0] || "";
+        var rec = new MediaRecorder(stream, mime ? { mimeType:mime } : undefined), chunks = [];
+        rec.ondataavailable = function(e){ if(e.data && e.data.size) chunks.push(e.data); };
+        var done = new Promise(function(resolve){
+          rec.onstop = function(){
+            stream.getTracks().forEach(function(tr){ tr.stop(); });
+            resolve(new Blob(chunks, { type: rec.mimeType || mime || "audio/mp4" }));
+          };
+        });
+        rec.start();
+        var timer = setTimeout(function(){ if(rec.state==="recording") rec.stop(); }, 60000);
+        return { stop:function(){ clearTimeout(timer); if(rec.state==="recording") rec.stop(); return done; } };
+      });
+    },
+    transcribe:function(blob){
+      return new Promise(function(resolve, reject){
+        var r = new FileReader();
+        r.onload = function(){ resolve(String(r.result).split(",")[1] || ""); };
+        r.onerror = reject; r.readAsDataURL(blob);
+      }).then(function(b64){
+        return fetch(CFG.transcribeUrl,{ method:"POST", headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({ audio:b64, mime:blob.type, lang:LANG }) });
+      }).then(function(res){
+        if(!res.ok) throw new Error("http");
+        return res.json();
+      }).then(function(d){ return String(d.text||"").trim(); });
+    }
+  };
+  try{ fetch(CFG.transcribeUrl).then(function(r){ return r.json(); })
+    .then(function(d){ voice.serverOn = !!(d && d.enabled); }).catch(function(){}); }catch(e){}
+
+  // Splits a coach answer into exercise steps (numbered lines, else bullets) with durations
+  // like "30 sec", "45 seconds each side" or "2 min".
+  function parseSteps(text){
+    var lines = String(text||"").split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    var numbered = lines.some(function(l){ return /^\d+[.)]\s+/.test(l); });
+    var re = numbered ? /^(\d+[.)])\s+(.*)$/ : /^([-•*–])\s+(.*)$/;
+    var steps = [];
+    lines.forEach(function(l){
+      var m = l.match(re); if(!m) return;
+      var body = m[2].replace(/\*\*|__/g,"").trim(); if(!body) return;
+      var secs = 0, tm = body.match(/(\d+(?:[.,]\d+)?)\s*(?:-|–|to)?\s*(?:\d+\s*)?(s|sec|secs|second|seconds|sek|sekunden|min|mins|minute|minutes|minuten)\b/i);
+      if(tm){
+        var n = parseFloat(tm[1].replace(",","."));
+        secs = /^m/i.test(tm[2]) ? Math.round(n*60) : Math.round(n);
+        if(/each side|per side|each leg|per leg|each arm|per arm|pro seite|je seite|chaque côté/i.test(body)) secs *= 2;
+        if(secs > 1800) secs = 0;
+      }
+      steps.push({ text:body, secs:secs });
+    });
+    return steps;
+  }
+
+  // Guided mode: one step per screen, read aloud, with a timer. Timed steps advance by themselves.
+  function openGuide(steps, coachName){
+    var i = 0, left = 0, tick = null, paused = false, wake = null;
+    var ov = el('<div class="guide" role="dialog" aria-modal="true">'+
+      '<div class="guide-top"><span class="g-count"></span><button class="g-x" aria-label="'+esc(t("gClose"))+'">✕</button></div>'+
+      '<div class="g-step"></div><div class="g-timer" aria-live="polite"></div>'+
+      '<div class="g-nav"><button class="btn ghost g-prev">'+esc(t("gBack"))+'</button>'+
+      '<button class="btn ghost g-pause">'+esc(t("gPause"))+'</button>'+
+      '<button class="btn g-next">'+esc(t("gNext"))+'</button></div></div>');
+    document.body.appendChild(ov);
+    function q(sel){ return ov.querySelector(sel); }
+    if(navigator.wakeLock && navigator.wakeLock.request){ navigator.wakeLock.request("screen").then(function(w){ wake = w; }).catch(function(){}); }
+    function fmt(x){ return Math.floor(x/60)+":"+String(x%60).padStart(2,"0"); }
+    function clear(){ if(tick){ clearInterval(tick); tick = null; } }
+    function close(){ clear(); voice.stop(); if(wake){ try{ wake.release(); }catch(e){} } ov.remove(); }
+    function startTimer(){
+      clear();
+      tick = setInterval(function(){
+        if(paused) return;
+        left -= 1; q(".g-timer").textContent = fmt(Math.max(left,0));
+        if(left===3) voice.speak(t("gThree"));
+        if(left<=0){ clear(); next(); }
+      }, 1000);
+    }
+    function show(){
+      clear();
+      var st = steps[i];
+      q(".g-count").textContent = t("stepOf",{i:i+1, n:steps.length});
+      q(".g-step").textContent = st.text;
+      q(".g-prev").disabled = i===0;
+      q(".g-next").textContent = i===steps.length-1 ? t("gDone") : t("gNext");
+      q(".g-pause").hidden = !st.secs; paused = false; q(".g-pause").textContent = t("gPause");
+      left = st.secs; q(".g-timer").textContent = st.secs ? fmt(left) : "";
+      // Announce first, then the clock runs; fallback in case the device never reports the end.
+      var started = false;
+      var go = function(){ if(started || steps[i]!==st || !st.secs) return; started = true; startTimer(); };
+      voice.speak(st.text, go);
+      setTimeout(go, 1500 + st.text.split(/\s+/).length*450);
+    }
+    function next(){
+      if(i >= steps.length-1){
+        clear(); voice.speak(t("gSaid"));
+        q(".g-step").textContent = t("gFinished"); q(".g-timer").textContent = ""; q(".g-count").textContent = coachName;
+        var b = el('<button class="btn">'+esc(t("gClose"))+'</button>');
+        q(".g-nav").replaceChildren(b); b.addEventListener("click", close);
+        return;
+      }
+      i += 1; show();
+    }
+    q(".g-x").addEventListener("click", close);
+    q(".g-next").addEventListener("click", next);
+    q(".g-prev").addEventListener("click", function(){ if(i>0){ i -= 1; show(); } });
+    q(".g-pause").addEventListener("click", function(){
+      paused = !paused; q(".g-pause").textContent = paused ? t("gResume") : t("gPause");
+      if(paused) voice.stop();
+    });
+    voice.unlock(); show();
+  }
+
+  // ---------- Chat ----------
+  function viewChat(k){
+    rerender = function(){ viewChat(k); };
+    var c = COACHES[k];
+    var histKey = "cf_chat_"+k;
+    var history = S.get(histKey, []);
+    var wrap = el(
+      '<div>'+
+        '<div class="topbar"><button id="bk">‹</button><h2 style="margin:0">'+c.icon+' '+esc(c.name)+'</h2></div>'+
+        '<p class="sub" style="font-size:.7rem;margin:-4px 0 8px">'+esc(t("chatNote"))+'</p>'+
+        '<div class="log" id="log"></div>'+
+        '<div class="inrow"><textarea id="in" rows="1" placeholder="'+esc(t("message",{name:c.name}))+'"></textarea>'+
+        (voice.canListen() ? '<button class="btn ghost mic" id="mic" aria-label="'+esc(t("speakTo",{name:c.name}))+'">🎙️</button>' : '')+
+        '<button class="btn" id="send" aria-label="'+esc(t("send"))+'">➤</button></div>'+
+      '</div>');
+    app.replaceChildren(wrap);
+    var log = wrap.querySelector("#log"), input = wrap.querySelector("#in"), sendBtn = wrap.querySelector("#send");
+    wrap.querySelector("#bk").addEventListener("click", viewHome);
+
+    function render(){
+      log.replaceChildren();
+      if(!history.length){ log.appendChild(el('<div class="msg bot">'+esc(t(c.greetKey||"greetDefault"))+'</div>')); }
+      history.forEach(function(m){
+        var node = el('<div class="msg '+(m.role==="user"?"user":"bot")+'">'+esc(m.content).replace(/\n/g,"<br>")+'</div>');
+        if(m.role!=="user" && !m.error){
+          var tools = el('<div class="msg-tools"></div>');
+          var hear = el('<button class="chip">'+esc(t("listen"))+'</button>');
+          hear.addEventListener("click", function(){ voice.unlock(); voice.speak(m.content); });
+          tools.appendChild(hear);
+          var steps = parseSteps(m.content);
+          if(steps.length >= 2){
+            var g = el('<button class="chip">'+esc(t("startGuide"))+'</button>');
+            g.addEventListener("click", function(){ openGuide(steps, c.name); });
+            tools.appendChild(g);
+          }
+          node.appendChild(tools);
+        }
+        log.appendChild(node);
+      });
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function send(spoken){
+      var text = (input.value||"").trim();
+      if(!text || sendBtn.disabled) return;
+      if(!accessOk()) return viewPaywall();
+      input.value = "";
+      history.push({role:"user", content:text});
+      S.set(histKey, history.slice(-40));
+      render();
+      var typing = el('<div class="msg bot typing">'+esc(t("typing",{name:c.name}))+'</div>');
+      log.appendChild(typing); window.scrollTo(0,document.body.scrollHeight);
+      sendBtn.disabled = true;
+      fetch(CFG.chatUrl,{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          coach:k,
+          token:S.get("cf_token",""),
+          email:S.get("cf_email",""),
+          profile:S.get("cf_profile",null),
+          lang:LANG,
+          messages:history.filter(function(m){return !m.error;}).slice(-12).map(function(m){return {role:m.role,content:m.content};})
+        })
+      }).then(function(r){
+        if(r.status===429) throw new Error("rate");
+        if(!r.ok) throw new Error("http");
+        return r.json();
+      }).then(function(d){
+        if(!d.text) throw new Error("empty");
+        history.push({role:"assistant", content:d.text});
+        if(spoken===true) voice.speak(d.text);
+      }).catch(function(){
+        history.push({role:"assistant", content:t("cantReach",{name:c.name}), error:true});
+      }).then(function(){
+        S.set(histKey, history.slice(-40)); sendBtn.disabled=false; render();
+      });
+    }
+    sendBtn.addEventListener("click", function(){ voice.unlock(); send(false); });
+    input.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); send(false); }});
+
+    // Mic: tap to talk, tap again to send. Server transcription when available, else the browser's.
+    var mic = wrap.querySelector("#mic"), recording = null, srRec = null, placeholder = input.placeholder;
+    function micIdle(){ mic.classList.remove("rec"); mic.disabled = false; mic.textContent = "🎙️"; input.placeholder = placeholder; }
+    function micBusy(){ mic.classList.add("rec"); mic.textContent = "⏹"; mic.setAttribute("aria-label", t("stopSend")); input.placeholder = t("listening"); }
+    function micFail(key){ micIdle(); input.placeholder = t(key); setTimeout(function(){ input.placeholder = placeholder; }, 4000); }
+    function useText(text){
+      if(!text){ return micFail("micErr"); }
+      input.value = text; send(true);
+    }
+    if(mic) mic.addEventListener("click", function(){
+      voice.unlock(); voice.stop();
+      if(!accessOk()) return viewPaywall();
+      if(voice.serverOn && voice.hasRecorder()){
+        if(!recording){
+          voice.record().then(function(r){ recording = r; micBusy(); })
+            .catch(function(){ micFail("micDenied"); });
+          return;
+        }
+        var r = recording; recording = null;
+        mic.classList.remove("rec"); mic.textContent = "…"; mic.disabled = true;
+        r.stop().then(voice.transcribe).then(function(text){ micIdle(); useText(text); })
+          .catch(function(){ micFail("micErr"); });
+        return;
+      }
+      if(SR){
+        if(srRec){ srRec.stop(); return; }
+        var heard = "";
+        srRec = new SR(); srRec.lang = VOICE_LANG[LANG] || "en-US"; srRec.interimResults = false; srRec.maxAlternatives = 1;
+        srRec.onresult = function(e){ heard = (e.results[0] && e.results[0][0] && e.results[0][0].transcript) || ""; };
+        srRec.onerror = function(e){ heard = ""; if(e.error==="not-allowed") micFail("micDenied"); };
+        srRec.onend = function(){ srRec = null; micIdle(); if(heard) useText(heard.trim()); };
+        try{ srRec.start(); micBusy(); }catch(e){ srRec = null; micFail("micErr"); }
+        return;
+      }
+      micFail("micErr");
+    });
+    render();
+  }
+
+  route();
+})();
+</script>
